@@ -1,6 +1,9 @@
 # sqlboiler-graphql-schema
 
-This websites generates a grapql schema based on the generated sqlboiler structs
+This websites generates a grapql schema based on the generated sqlboiler structs.
+
+- Models
+- Mutations (Followed best practices https://blog.apollographql.com/designing-graphql-mutations-e09de826ed97)
 
 ## First goals
 
@@ -9,6 +12,8 @@ This websites generates a grapql schema based on the generated sqlboiler structs
 ## Future roadmap
 
 - Edges / connections
+- Adding node from to many-to-many relationships
+- Removing node from many-to-many relationships
 - Merging with existing schema?
 
 ```
