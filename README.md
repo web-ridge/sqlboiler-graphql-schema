@@ -13,11 +13,11 @@ You can edit your schema like you want and can still
 - Generating basic queries (100%)
 - Generating filter for array queries (100%)
 - Generating filters for relationships (100%)
-- Generating input for mutations (60%)
-- Generating payload for mutations (60%)
+- Generating input for mutations (100%)
+- Generating payload for mutations (100%)
 - Generating mutations (100%)
-- Generating mutations for array models (0%)
-- Generating pagination for array models (0%)
+- Generating mutations for array models (0% WIP)
+- Generating pagination for array models (0% WIP)
 
 ## Future roadmap
 
