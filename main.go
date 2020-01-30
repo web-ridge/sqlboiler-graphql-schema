@@ -17,7 +17,7 @@ func init() {
 	pluralizer = pluralize.NewClient()
 }
 
-const indent = "  "
+const indent = "\t"
 
 type Model struct {
 	Name       string
@@ -186,11 +186,19 @@ func main() {
 				// 	search: String
 				// 	where: UserWhere
 				// }
-
+				schema.WriteString("type " + model + "Filter {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + "search: String")
+				schema.WriteString("\n")
+				schema.WriteString(indent + "where: " + model + "Where")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
 				// Generate a where struct
 				// type UserWhere {
 				// 	id: IDFilter
 				// 	title: StringFilter
+				// 	organization: OrganizationWhere
 				// 	or: FlowBlockWhere
 				// 	and: FlowBlockWhere
 				// }
@@ -198,7 +206,9 @@ func main() {
 				schema.WriteString("\n")
 				for _, field := range fields {
 					if field.IsRelation {
-						// TODO: Support filtering in relationships (atleast schema wise)
+						// Support filtering in relationships (atleast schema wise)
+						schema.WriteString(indent + field.Name + ": " + field.Type + "Where")
+						schema.WriteString("\n")
 					} else {
 						schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
 						schema.WriteString("\n")
@@ -222,21 +232,85 @@ func main() {
 				// single models
 				schema.WriteString(indent)
 				schema.WriteString(strcase.ToLowerCamel(model) + "(id: ID!)")
-				schema.WriteString(":")
+				schema.WriteString(": ")
 				schema.WriteString(model + "!")
 				schema.WriteString("\n")
 
 				// lists
 				modelArray := pluralizer.Plural(model)
 				schema.WriteString(indent)
-				schema.WriteString(strcase.ToLowerCamel(modelArray) + "")
-				schema.WriteString(":")
+				// TODO: pagination
+				schema.WriteString(strcase.ToLowerCamel(modelArray) + "(filter: " + model + "Filter)")
+				schema.WriteString(": ")
 				schema.WriteString("[" + model + "!]!")
 				schema.WriteString("\n")
 
 			}
 			schema.WriteString("}")
 			schema.WriteString("\n")
+
+			// TODO: Generate input and payloads for mutatations
+
+			// TODO: Generate mutation queries
+
+			schema.WriteString("type Mutation {")
+			schema.WriteString("\n")
+			for model, _ := range fieldPerModel {
+
+				modelArray := pluralizer.Plural(model)
+
+				// create single
+				// e.g createUser(input: UserInput!): UserPayload!
+				schema.WriteString(indent)
+				schema.WriteString("create" + model + "(input: " + model + "Input!)")
+				schema.WriteString(": ")
+				schema.WriteString(model + "Payload!")
+				schema.WriteString("\n")
+
+				// create multiple
+				// e.g createUsers(input: [UsersInput!]!): UsersPayload!
+				schema.WriteString(indent)
+				schema.WriteString("create" + modelArray + "(input: " + modelArray + "Input!)")
+				schema.WriteString(": ")
+				schema.WriteString(modelArray + "Payload!")
+				schema.WriteString("\n")
+
+				// update single
+				// e.g updateUser(id: ID!, input: UserInput!): UserPayload!
+				schema.WriteString(indent)
+				schema.WriteString("update" + model + "(input: " + model + "Input!)")
+				schema.WriteString(": ")
+				schema.WriteString(model + "Payload!")
+				schema.WriteString("\n")
+
+				// update multiple (batch update)
+				// e.g updateUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
+				schema.WriteString(indent)
+				schema.WriteString("update" + modelArray + "(filter: " + model + "Filter, input: " + modelArray + "Input!)")
+				schema.WriteString(": ")
+				schema.WriteString(modelArray + "Payload!")
+				schema.WriteString("\n")
+
+				// delete single
+				// e.g deleteUser(id: ID!): UserPayload!
+				schema.WriteString(indent)
+				schema.WriteString("delete" + model + "(id: ID!)")
+				schema.WriteString(": ")
+				schema.WriteString(model + "DeletePayload!")
+				schema.WriteString("\n")
+
+				// delete multiple
+				// e.g deleteUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
+				schema.WriteString(indent)
+				schema.WriteString("delete" + modelArray + "(filter: " + model + "Filter)")
+				schema.WriteString(": ")
+				schema.WriteString(modelArray + "DeletePayload!")
+				schema.WriteString("\n")
+
+			}
+			schema.WriteString("}")
+			schema.WriteString("\n")
+
 			fmt.Println(schema.String())
 
 			return nil
