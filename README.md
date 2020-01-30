@@ -24,10 +24,6 @@ Feel free to help and make a PR.
 go run github.com/webridge-git/sqlboiler-graphql-schema
 ```
 
-### Possible detection
-
-if table has only 2 relationship and table contains both tables
-
 ## Filtering lists (WIP)
 
 This program generates type safe filters you can use in your frontend
@@ -133,3 +129,7 @@ Organization {
     Users []User
 }
 ```
+
+### Possible detection
+
+if table has only 2 relationship and table contains both tables
