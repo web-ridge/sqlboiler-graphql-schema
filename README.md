@@ -26,24 +26,26 @@ go run github.com/webridge-git/sqlboiler-graphql-schema
 
 ## How to detect many to many (notes to myself)
 
+```go
 User {
-UserOrganizations []UserOrganization
-Posts []Post
+    UserOrganizations []UserOrganization
+    Posts []Post
 }
 
 Post {
-User User
-Message string
+    User User
+    Message string
 }
 
 UserOrganization {
-User User
-Organization Organization
+    User User
+    Organization Organization
 }
 
 Organization {
-Users []User
+    Users []User
 }
+```
 
 ### Possible detection
 
