@@ -8,6 +8,10 @@ You can edit your schema like you want later and re-generate if your database ch
 
 `go run github.com/web-ridge/sqlboiler-graphql-schema`
 
+## Before running
+- Install prettier globally (https://prettier.io/ `yarn global add prettier`)
+- Install git command line (required to do three way merging)
+
 ## Options
 
 ```
