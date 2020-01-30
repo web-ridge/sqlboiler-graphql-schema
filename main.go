@@ -13,6 +13,7 @@ import (
 type Model struct {
 	Name       string
 	Implements *string
+	Fields     []Field
 }
 type Field struct {
 	Name       string
@@ -41,13 +42,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			fmt.Println(outputFile)
-			// boilerTypeMap, _ := boiler.ParseBoilerFile(modelDirectory)
-
-			// boilerTypeMap =
-			// Block.L blockL
-			// FlowBlock.ID int
-			// User.LastName null.String
+			var schema strings.Builder
 
 			boilerTypeMap, _ := boiler.ParseBoilerFile(modelDirectory)
 			// fmt.Println("boilerStructMap")
@@ -114,16 +109,12 @@ func main() {
 			}
 
 			for modelName, relations := range relationsPerModel {
-				for _, relationField := range relations {
-					// remove relationID from fields since the relationship is preloadable
-					fieldPerModel[modelName] = append(fieldPerModel[modelName], relationField)
-
-				}
+				fieldPerModel[modelName] = append(fieldPerModel[modelName], relations...)
 			}
-
 			for model, fields := range fieldPerModel {
-				fmt.Println("type " + model + " {")
 
+				schema.WriteString("type " + model + " {")
+				schema.WriteString("\n")
 				for _, field := range fields {
 
 					gType := field.Type
@@ -137,11 +128,14 @@ func main() {
 						// so String! is a non-nullable string.
 						gType = gType + "!"
 					}
-
-					fmt.Println("        " + field.Name + " : " + gType)
+					schema.WriteString("        " + field.Name + " : " + gType)
+					schema.WriteString("\n")
 				}
-				fmt.Println("}")
+				schema.WriteString("}")
+				schema.WriteString("\n")
 			}
+
+			fmt.Println(schema.String())
 
 			return nil
 		},
@@ -162,10 +156,7 @@ func isRequired(boilerType string) bool {
 }
 
 func isArray(boilerType string) bool {
-	if strings.HasSuffix(boilerType, "Slice") {
-		return true
-	}
-	return false
+	return strings.HasSuffix(boilerType, "Slice")
 }
 
 func toGraphQLType(fieldName, boilerType string) string {
