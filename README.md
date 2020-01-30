@@ -11,6 +11,8 @@ This websites generates a grapql schema based on the generated sqlboiler structs
 - Generating basic queries (100%)
 - Generating filter for array queries (100%)
 - Generating filters for relationships of array (100%)
+- Generating input for mutations (0%)
+- Generating payload for mutations (0%)
 - Generating mutations (100%)
 - Generating mutations for array models (0%)
 - Generating pagination for array models (0%)
