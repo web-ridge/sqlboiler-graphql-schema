@@ -6,7 +6,7 @@ You can edit your schema like you want later and re-generate if your database ch
 
 ## How to run
 
-`go run github.com/web-ridge/sqlboiler-graphql-schema -h`
+`go run github.com/web-ridge/sqlboiler-graphql-schema`
 
 ## Options
 
