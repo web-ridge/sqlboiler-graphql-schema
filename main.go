@@ -27,6 +27,7 @@ type Model struct {
 type Field struct {
 	Name       string
 	Type       string // String, ID, Integer
+	FullType   string // e.g String! or if array [String!]
 	BoilerName string
 	BoilerType string
 	IsRequired bool
@@ -164,6 +165,7 @@ func main() {
 						// so String! is a non-nullable string.
 						gType = gType + "!"
 					}
+					field.FullType = gType
 
 					schema.WriteString(indent + field.Name + " : " + gType)
 					schema.WriteString("\n")
@@ -249,9 +251,37 @@ func main() {
 			schema.WriteString("}")
 			schema.WriteString("\n")
 
-			// TODO: Generate input and payloads for mutatations
+			// Generate input and payloads for mutatations
+			for model, fields := range fieldPerModel {
+				// input UserInput {
+				// 	firstName: String!
+				// 	lastName: String
+				//	organizationId: ID!
+				// }
+				schema.WriteString("input " + model + "Input {")
+				schema.WriteString("\n")
+				for _, field := range fields {
+					schema.WriteString(indent + field.Name + " : " + field.FullType)
+					schema.WriteString("\n")
+				}
+				schema.WriteString("}")
+				schema.WriteString("\n")
 
-			// TODO: Generate mutation queries
+				// type UserPayload {
+				// 	user: User!
+				// }
+				schema.WriteString("type " + model + "Payload {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + strcase.ToLowerCamel(model) + ": " + model + "!")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+
+				// TODO batch, delete input and payloads
+
+			}
+
+			// Generate mutation queries
 
 			schema.WriteString("type Mutation {")
 			schema.WriteString("\n")
@@ -312,6 +342,11 @@ func main() {
 			schema.WriteString("\n")
 
 			fmt.Println(schema.String())
+
+			// TODO
+			// if file exist -> do three way merging
+			// else
+			// write schema to disk
 
 			return nil
 		},

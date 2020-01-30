@@ -1,16 +1,18 @@
 # sqlboiler-graphql-schema
 
-This websites generates a grapql schema based on the generated sqlboiler structs we do this because we want to support the sqlboiler aliasing in our schema.
+This websites generates a grapql schema based on the generated sqlboiler structs we do this because we want to support the sqlboiler aliasing in our schema. Generating the schema is a good way too add type safety to queries and filters and prevent too much manual typing.
+
+You can edit your schema like you want and can still
 
 - Models
 - Mutations (Followed best practices https://blog.apollographql.com/designing-graphql-mutations-e09de826ed97)
 
-## First goals
+## Features
 
 - Generating basic models (100%)
 - Generating basic queries (100%)
 - Generating filter for array queries (100%)
-- Generating filters for relationships of array (100%)
+- Generating filters for relationships (100%)
 - Generating input for mutations (0%)
 - Generating payload for mutations (0%)
 - Generating mutations (100%)
@@ -19,12 +21,11 @@ This websites generates a grapql schema based on the generated sqlboiler structs
 
 ## Future roadmap
 
-- Three way diff merge https://github.com/charlesvdv/go-three-way-merge to support updating the schema
+- Three way diff merge https://github.com/charlesvdv/go-three-way-merge to support manual updating the schema and re-generating
 - Edges / connections
 - Detecting when relationship is many to many
 - Adding node from to many-to-many relationships
 - Removing node from many-to-many relationships
-- Merging with existing schema?
 
 Feel free to help and make a PR.
 
