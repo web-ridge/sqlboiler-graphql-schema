@@ -11,7 +11,7 @@ This websites generates a grapql schema based on the generated sqlboiler structs
 
 ## Future roadmap
 
-- Three way diff merge https://github.com/charlesvdv/go-three-way-merge
+- Three way diff merge https://github.com/charlesvdv/go-three-way-merge to support updating the schema
 - Edges / connections
 - Detecting when relationship is many to many
 - Adding node from to many-to-many relationships
@@ -51,6 +51,18 @@ query(filter: {
         }
     }
 })
+
+where: {
+    id: {
+        equalTo: 1
+    }
+    name: {
+        startsWith: 'J',
+    }
+    where:{
+
+    }
+}
 ```
 
 ### (() or ())

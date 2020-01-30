@@ -31,6 +31,7 @@ type Field struct {
 	BoilerType string
 	IsRequired bool
 	IsArray    bool
+	IsRelation bool
 }
 
 const queryHelperStructs = `
@@ -122,7 +123,9 @@ func main() {
 							relationsPerModel[modelName] = []*Field{}
 						}
 						// fmt.Println("adding relation " + fieldName + " to " + modelName + " ")
-						relationsPerModel[modelName] = append(relationsPerModel[modelName], toField(boilerFieldName, boilerType))
+						relationField := toField(boilerFieldName, boilerType)
+						relationField.IsRelation = true
+						relationsPerModel[modelName] = append(relationsPerModel[modelName], relationField)
 					}
 
 					continue
@@ -194,8 +197,13 @@ func main() {
 				schema.WriteString("type " + model + "Where {")
 				schema.WriteString("\n")
 				for _, field := range fields {
-					schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
-					schema.WriteString("\n")
+					if field.IsRelation {
+						// TODO: Support filtering in relationships (atleast schema wise)
+					} else {
+						schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
+						schema.WriteString("\n")
+					}
+
 				}
 				schema.WriteString(indent + "or: " + model + "Where")
 				schema.WriteString("\n")
