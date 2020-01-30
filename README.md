@@ -51,49 +51,7 @@ if table has only 2 relationship and table contains both tables
 
 ## Filtering lists (WIP)
 
-```grapql
-enum FilterTypeID {
-IN
-NOT_IN
-EQUAL
-NOT_EQUAL
-}
-enum FilterTypeBool {
-TRUE
-FALSE
-NULL
-}
-enum FilterTypeInteger {
-EQUAL
-NOT_EQUAL
-LOWER_THAN
-LOWER_THAN_OR_EQUAL
-IN
-NOT_IN
-}
-enum FilterTypeString {
-EQUAL
-NOT_EQUAL
-LOWER_THAN
-LOWER_THAN_OR_EQUAL
-IN
-NOT_IN
-}
-
-enum FlowBlockColumn {
-ID
-
-}
-
-type FlowBlockExpression {
-Field:
-Expressions: [FlowBlockExpression!]
-}
-type FlowBlockWhere {
-Search: String
-Expressions: [FlowBlockExpression!]!
-}
-```
+This program generates type safe filters you can use in your frontend
 
 ### Search
 
