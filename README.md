@@ -11,6 +11,7 @@ This websites generates a grapql schema based on the generated sqlboiler structs
 
 ## Future roadmap
 
+- Three way diff merge https://github.com/charlesvdv/go-three-way-merge
 - Edges / connections
 - Detecting when relationship is many to many
 - Adding node from to many-to-many relationships
@@ -94,6 +95,55 @@ Expressions: [FlowBlockExpression!]!
 }
 ```
 
+### Search
+
+```graphql
+query(filter: {
+    search: 'jan'
+})
+```
+
+### This or that
+
+```graphql
+query(filter: {
+    where: {
+        name:{
+            equalTo: 'Jan'
+        }
+        or: {
+            name: {
+                equalTo: 'Jannes',
+            }
+        }
+    }
+})
+```
+
+### (() or ())
+
+````graphql
+query(filter: {
+    where: {
+        or:{
+            id: {
+                equalTo: 1
+            }
+            name: {
+                startsWith: 'J',
+            }
+            or:{
+                id: {
+                    equalTo: 2
+                }
+                name: {
+                    startsWith: 'R',
+                }
+            }
+        }
+    }})
+
+### Filter
 ```graphql
 query(filter: {
     where: {
@@ -122,4 +172,4 @@ query(filter: {
     }
 
 })
-```
+````

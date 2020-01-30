@@ -27,9 +27,43 @@ type Model struct {
 type Field struct {
 	Name       string
 	Type       string // String, ID, Integer
+	BoilerName string
+	BoilerType string
 	IsRequired bool
 	IsArray    bool
 }
+
+const queryHelperStructs = `
+type FilterID {
+	in: [ID!]
+	notIn: [ID!]
+}
+type FilterString {
+	equalTo: String
+	in: [String!]
+	notIn: [String!]
+
+	startsWith: String
+	endsWith: String
+	contains: String
+
+	startsWithStrict: String # Camel sensitive
+	endsWithStrict: String # Camel sensitive
+	containsStrict: String # Camel sensitive
+}
+type FilterInteger {
+	equalTo: Int
+	lessThan: Int
+	lessThanOrEqualTo: Int
+	moreThan: Int
+	moreThanOrEqualTo: Int
+	in: [Int!]
+	notIn: [Int!]
+}
+type FilterBoolean {
+	equalTo: Boolean
+}
+`
 
 func main() {
 	var modelDirectory string
@@ -75,7 +109,7 @@ func main() {
 			for modelAndField, boilerType := range boilerTypeMap {
 				splitted := strings.Split(modelAndField, ".")
 				modelName := splitted[0]
-				fieldName := splitted[1]
+				boilerFieldName := splitted[1]
 				if isFirstCharacterLowerCase(modelName) {
 
 					// It's the relations of the model
@@ -88,12 +122,7 @@ func main() {
 							relationsPerModel[modelName] = []*Field{}
 						}
 						// fmt.Println("adding relation " + fieldName + " to " + modelName + " ")
-						relationsPerModel[modelName] = append(relationsPerModel[modelName], &Field{
-							Name:       fieldName,
-							Type:       toGraphQLType(fieldName, boilerType),
-							IsRequired: isRequired(boilerType),
-							IsArray:    isArray(boilerType),
-						})
+						relationsPerModel[modelName] = append(relationsPerModel[modelName], toField(boilerFieldName, boilerType))
 					}
 
 					continue
@@ -105,16 +134,11 @@ func main() {
 					fieldPerModel[modelName] = []*Field{}
 				}
 
-				if fieldName == "L" || fieldName == "R" {
+				if boilerFieldName == "L" || boilerFieldName == "R" {
 					continue
 				}
 
-				fieldPerModel[modelName] = append(fieldPerModel[modelName], &Field{
-					Name:       fieldName,
-					Type:       toGraphQLType(fieldName, boilerType),
-					IsRequired: isRequired(boilerType),
-					IsArray:    isArray(boilerType),
-				})
+				fieldPerModel[modelName] = append(fieldPerModel[modelName], toField(boilerFieldName, boilerType))
 			}
 
 			for modelName, relations := range relationsPerModel {
@@ -138,16 +162,47 @@ func main() {
 						gType = gType + "!"
 					}
 
-					gName := strcase.ToLowerCamel(field.Name)
-					gName = strings.Replace(gName, "iD", "id", -1)
-					if strings.HasSuffix(gName, "ID") {
-						gName = strings.TrimSuffix(gName, "ID")
-						gName = gName + "Id"
-					}
-
-					schema.WriteString(indent + gName + " : " + gType)
+					schema.WriteString(indent + field.Name + " : " + gType)
 					schema.WriteString("\n")
 				}
+				schema.WriteString("}")
+				schema.WriteString("\n")
+			}
+
+			// Add helpers for filtering lists
+			schema.WriteString(queryHelperStructs)
+			schema.WriteString("\n")
+
+			// generate filter structs per model
+			for model, fields := range fieldPerModel {
+
+				// Generate a type safe grapql filter
+
+				// Generate the base filter
+				// type UserFilter {
+				// 	search: String
+				// 	where: UserWhere
+				// }
+
+				// Generate a where struct
+				// type UserWhere {
+				// 	id: IDFilter
+				// 	title: StringFilter
+				// 	or: FlowBlockWhere
+				// 	and: FlowBlockWhere
+				// }
+				schema.WriteString("type " + model + "Where {")
+				schema.WriteString("\n")
+				for _, field := range fields {
+					schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
+					schema.WriteString("\n")
+				}
+				schema.WriteString(indent + "or: " + model + "Where")
+				schema.WriteString("\n")
+
+				schema.WriteString(indent + "and: " + model + "Where")
+				schema.WriteString("\n")
+
 				schema.WriteString("}")
 				schema.WriteString("\n")
 			}
@@ -155,12 +210,15 @@ func main() {
 			schema.WriteString("type Query {")
 			schema.WriteString("\n")
 			for model, _ := range fieldPerModel {
+
+				// single models
 				schema.WriteString(indent)
 				schema.WriteString(strcase.ToLowerCamel(model) + "(id: ID!)")
 				schema.WriteString(":")
 				schema.WriteString(model + "!")
 				schema.WriteString("\n")
 
+				// lists
 				modelArray := pluralizer.Plural(model)
 				schema.WriteString(indent)
 				schema.WriteString(strcase.ToLowerCamel(modelArray) + "")
@@ -194,7 +252,30 @@ func isRequired(boilerType string) bool {
 func isArray(boilerType string) bool {
 	return strings.HasSuffix(boilerType, "Slice")
 }
+func toField(boilerName, boilerType string) *Field {
+	return &Field{
+		Name:       toGraphQLName(boilerName, boilerType),
+		Type:       toGraphQLType(boilerName, boilerType),
+		BoilerName: boilerName,
+		BoilerType: boilerType,
+		IsRequired: isRequired(boilerType),
+		IsArray:    isArray(boilerType),
+	}
+}
+func toGraphQLName(fieldName, boilerType string) string {
+	graphqlName := fieldName
 
+	// Golang ID to Id the right way
+	// Primary key
+	if graphqlName == "ID" {
+		graphqlName = "id"
+	}
+
+	// e.g. OrganizationID
+	graphqlName = strings.Replace(graphqlName, "ID", "Id", -1)
+
+	return strcase.ToLowerCamel(graphqlName)
+}
 func toGraphQLType(fieldName, boilerType string) string {
 	lowerFieldName := strings.ToLower(fieldName)
 	lowerBoilerType := strings.ToLower(boilerType)
