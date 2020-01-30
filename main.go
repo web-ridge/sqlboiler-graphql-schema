@@ -82,7 +82,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			schema := getSchema(modelDirectory)
+			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete)
 			fmt.Println(schema)
 			return nil
 		},

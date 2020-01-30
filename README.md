@@ -2,7 +2,31 @@
 
 This websites generates a grapql schema based on the generated sqlboiler structs we do this because we want to support the sqlboiler aliasing in our schema. Generating the schema is a good way too add type safety to queries and filters and prevent too much manual typing.
 
-You can edit your schema like you want and can still
+You can edit your schema like you want later and re-generate if your database changes. This program will create a merge conflict with your existing schema so you can choose to accept/reject changes.
+
+## How to run
+
+`go run github.com/web-ridge/sqlboiler-graphql-schema -h`
+
+## Options
+
+```
+USAGE:
+    [global options] command [command options] [arguments...]
+
+COMMANDS:
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --input value   directory where the sqlboiler models are (default: "models")
+   --output value  filepath for schema (default: "schema.graphql")
+   --mutations     generate mutations for models
+   --batch-update  generate batch update for models
+   --batch-create  generate batch create for models
+   --batch-delete  generate batch delete for models
+   --help, -h      show help
+   --version, -v   print the version
+```
 
 - Models
 - Mutations (Followed best practices https://blog.apollographql.com/designing-graphql-mutations-e09de826ed97)
