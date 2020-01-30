@@ -21,22 +21,6 @@ func init() {
 
 const indent = "\t"
 
-type Model struct {
-	Name       string
-	Implements *string
-	Fields     []Field
-}
-type Field struct {
-	Name       string
-	Type       string // String, ID, Integer
-	FullType   string // e.g String! or if array [String!]
-	BoilerName string
-	BoilerType string
-	IsRequired bool
-	IsArray    bool
-	IsRelation bool
-}
-
 // global configs
 
 func main() {
@@ -127,6 +111,27 @@ type FilterBoolean {
 }
 `
 
+type Model struct {
+	Name   string
+	Fields []*Field
+	// Implements *string
+}
+type Field struct {
+	Name       string
+	Type       string // String, ID, Integer
+	FullType   string // e.g String! or if array [String!]
+	BoilerName string
+	BoilerType string
+	IsRequired bool
+	IsArray    bool
+	IsRelation bool
+}
+
+type BoilerType struct {
+	Name string
+	Type string
+}
+
 func getSchema(
 	modelDirectory string,
 	mutations bool,
@@ -136,112 +141,23 @@ func getSchema(
 ) string {
 	var schema strings.Builder
 
-	boilerTypeMap, _, boilerTypeOrder := boiler.ParseBoilerFile(modelDirectory)
+	fmt.Println("YES YES YES")
 
-	fieldPerModel := make(map[string][]*Field)
-	relationsPerModel := make(map[string][]*Field)
+	models := getModelsAndFields(getSortedBoilerTypes(modelDirectory))
 
-	boilerTypeKeys := make([]string, 0, len(boilerTypeMap))
-	for k := range boilerTypeMap {
-		boilerTypeKeys = append(boilerTypeKeys, k)
-	}
+	for _, model := range models {
 
-	// order same way as sqlboiler fields with one exception
-	// let createdAt, updatedAt and deletedAt as last
-	sort.Slice(boilerTypeKeys, func(i, b int) bool {
-
-		aKey := boilerTypeKeys[i]
-		bKey := boilerTypeKeys[b]
-
-		aOrder := boilerTypeOrder[aKey]
-		bOrder := boilerTypeOrder[bKey]
-
-		higherOrders := []string{"createdat", "updatedat", "deletedat"}
-		for i, higherOrder := range higherOrders {
-			if strings.HasSuffix(strings.ToLower(aKey), higherOrder) {
-				aOrder += 1000000 + i
-			}
-			if strings.HasSuffix(strings.ToLower(bKey), higherOrder) {
-				bOrder += 10000000 + i
-			}
-		}
-
-		return aOrder < bOrder
-	})
-
-	for _, modelAndField := range boilerTypeKeys {
-		// fmt.Println(modelAndField)
-		boilerType := boilerTypeMap[modelAndField]
-		splitted := strings.Split(modelAndField, ".")
-		modelName := splitted[0]
-		boilerFieldName := splitted[1]
-		if isFirstCharacterLowerCase(modelName) {
-
-			// It's the relations of the model
-			// let's add them so we can use them later
-
-			if strings.HasSuffix(modelName, "R") {
-				modelName = strcase.ToCamel(strings.TrimSuffix(modelName, "R"))
-				_, ok := relationsPerModel[modelName]
-				if !ok {
-					relationsPerModel[modelName] = []*Field{}
-				}
-				// fmt.Println("adding relation " + fieldName + " to " + modelName + " ")
-				relationField := toField(boilerFieldName, boilerType)
-				relationField.IsRelation = true
-				relationsPerModel[modelName] = append(relationsPerModel[modelName], relationField)
-			}
-
-			continue
-
-		}
-
-		_, ok := fieldPerModel[modelName]
-		if !ok {
-			fieldPerModel[modelName] = []*Field{}
-		}
-
-		if boilerFieldName == "L" || boilerFieldName == "R" {
-			continue
-		}
-
-		fieldPerModel[modelName] = append(fieldPerModel[modelName], toField(boilerFieldName, boilerType))
-	}
-
-	// relations
-	for modelName, relations := range relationsPerModel {
-		fieldPerModel[modelName] = append(fieldPerModel[modelName], relations...)
-	}
-
-	// take care that models are always returned in same order
-	sortedModelNames := make([]string, 0, len(relationsPerModel))
-	for k := range relationsPerModel {
-		sortedModelNames = append(sortedModelNames, k)
-	}
-	sort.Strings(sortedModelNames)
-
-	for _, model := range sortedModelNames {
-		fields := relationsPerModel[model]
-
-		schema.WriteString("type " + model + " {")
+		schema.WriteString("type " + model.Name + " {")
 		schema.WriteString("\n")
-		for _, field := range fields {
-
-			gType := field.Type
-
-			if field.IsArray {
-				// To use a list type, surround the type in square brackets, so [Int] is a list of integers.
-				gType = "[" + gType + "]"
+		for _, field := range model.Fields {
+			// e.g we have foreign key from user to organization
+			// organizationID is clutter in your scheme
+			// you only want Organization and OrganizationID should be skipped
+			if !relationExist(field, model.Fields) {
+				schema.WriteString(indent + field.Name + ": " + field.FullType)
+				schema.WriteString("\n")
 			}
-			if field.IsRequired {
-				// Use an exclamation point to indicate a type cannot be nullable,
-				// so String! is a non-nullable string.
-				gType = gType + "!"
-			}
-			field.FullType = gType
 
-			schema.WriteString(indent + field.Name + " : " + gType)
-			schema.WriteString("\n")
 		}
 		schema.WriteString("}")
 		schema.WriteString("\n")
@@ -252,8 +168,7 @@ func getSchema(
 	schema.WriteString("\n")
 
 	// generate filter structs per model
-	for _, model := range sortedModelNames {
-		fields := relationsPerModel[model]
+	for _, model := range models {
 
 		// Generate a type safe grapql filter
 
@@ -262,11 +177,11 @@ func getSchema(
 		// 	search: String
 		// 	where: UserWhere
 		// }
-		schema.WriteString("type " + model + "Filter {")
+		schema.WriteString("type " + model.Name + "Filter {")
 		schema.WriteString("\n")
 		schema.WriteString(indent + "search: String")
 		schema.WriteString("\n")
-		schema.WriteString(indent + "where: " + model + "Where")
+		schema.WriteString(indent + "where: " + model.Name + "Where")
 		schema.WriteString("\n")
 		schema.WriteString("}")
 		schema.WriteString("\n")
@@ -278,9 +193,9 @@ func getSchema(
 		// 	or: FlowBlockWhere
 		// 	and: FlowBlockWhere
 		// }
-		schema.WriteString("type " + model + "Where {")
+		schema.WriteString("type " + model.Name + "Where {")
 		schema.WriteString("\n")
-		for _, field := range fields {
+		for _, field := range model.Fields {
 			if field.IsRelation {
 				// Support filtering in relationships (atleast schema wise)
 				schema.WriteString(indent + field.Name + ": " + field.Type + "Where")
@@ -291,10 +206,10 @@ func getSchema(
 			}
 
 		}
-		schema.WriteString(indent + "or: " + model + "Where")
+		schema.WriteString(indent + "or: " + model.Name + "Where")
 		schema.WriteString("\n")
 
-		schema.WriteString(indent + "and: " + model + "Where")
+		schema.WriteString(indent + "and: " + model.Name + "Where")
 		schema.WriteString("\n")
 
 		schema.WriteString("}")
@@ -303,21 +218,21 @@ func getSchema(
 
 	schema.WriteString("type Query {")
 	schema.WriteString("\n")
-	for _, model := range sortedModelNames {
+	for _, model := range models {
 		// single models
 		schema.WriteString(indent)
-		schema.WriteString(strcase.ToLowerCamel(model) + "(id: ID!)")
+		schema.WriteString(strcase.ToLowerCamel(model.Name) + "(id: ID!)")
 		schema.WriteString(": ")
-		schema.WriteString(model + "!")
+		schema.WriteString(model.Name + "!")
 		schema.WriteString("\n")
 
 		// lists
-		modelArray := pluralizer.Plural(model)
+		modelArray := pluralizer.Plural(model.Name)
 		schema.WriteString(indent)
 		// TODO: pagination
-		schema.WriteString(strcase.ToLowerCamel(modelArray) + "(filter: " + model + "Filter)")
+		schema.WriteString(strcase.ToLowerCamel(modelArray) + "(filter: " + model.Name + "Filter)")
 		schema.WriteString(": ")
-		schema.WriteString("[" + model + "!]!")
+		schema.WriteString("[" + model.Name + "!]!")
 		schema.WriteString("\n")
 
 	}
@@ -326,17 +241,17 @@ func getSchema(
 
 	// Generate input and payloads for mutatations
 	if mutations {
-		for _, model := range sortedModelNames {
-			fields := relationsPerModel[model]
-			modelArray := pluralizer.Plural(model)
+		for _, model := range models {
+
+			modelArray := pluralizer.Plural(model.Name)
 			// input UserInput {
 			// 	firstName: String!
 			// 	lastName: String
 			//	organizationId: ID!
 			// }
-			schema.WriteString("input " + model + "Input {")
+			schema.WriteString("input " + model.Name + "Input {")
 			schema.WriteString("\n")
-			for _, field := range fields {
+			for _, field := range model.Fields {
 				// not possible yet in input
 				if field.IsRelation {
 					continue
@@ -350,9 +265,9 @@ func getSchema(
 			// type UserPayload {
 			// 	user: User!
 			// }
-			schema.WriteString("type " + model + "Payload {")
+			schema.WriteString("type " + model.Name + "Payload {")
 			schema.WriteString("\n")
-			schema.WriteString(indent + strcase.ToLowerCamel(model) + ": " + model + "!")
+			schema.WriteString(indent + strcase.ToLowerCamel(model.Name) + ": " + model.Name + "!")
 			schema.WriteString("\n")
 			schema.WriteString("}")
 			schema.WriteString("\n")
@@ -362,7 +277,7 @@ func getSchema(
 			// type UserDeletePayload {
 			// 	id: ID!
 			// }
-			schema.WriteString("type " + model + "DeletePayload {")
+			schema.WriteString("type " + model.Name + "DeletePayload {")
 			schema.WriteString("\n")
 			schema.WriteString(indent + "id: ID!")
 			schema.WriteString("\n")
@@ -399,16 +314,16 @@ func getSchema(
 	if mutations {
 		schema.WriteString("type Mutation {")
 		schema.WriteString("\n")
-		for _, model := range sortedModelNames {
+		for _, model := range models {
 
-			modelArray := pluralizer.Plural(model)
+			modelArray := pluralizer.Plural(model.Name)
 
 			// create single
 			// e.g createUser(input: UserInput!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("create" + model + "(input: " + model + "Input!)")
+			schema.WriteString("create" + model.Name + "(input: " + model.Name + "Input!)")
 			schema.WriteString(": ")
-			schema.WriteString(model + "Payload!")
+			schema.WriteString(model.Name + "Payload!")
 			schema.WriteString("\n")
 
 			// create multiple
@@ -424,16 +339,16 @@ func getSchema(
 			// update single
 			// e.g updateUser(id: ID!, input: UserInput!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("update" + model + "(input: " + model + "Input!)")
+			schema.WriteString("update" + model.Name + "(input: " + model.Name + "Input!)")
 			schema.WriteString(": ")
-			schema.WriteString(model + "Payload!")
+			schema.WriteString(model.Name + "Payload!")
 			schema.WriteString("\n")
 
 			// update multiple (batch update)
 			// e.g updateUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
 			if batchUpdate {
 				schema.WriteString(indent)
-				schema.WriteString("update" + modelArray + "(filter: " + model + "Filter, input: " + modelArray + "Input!)")
+				schema.WriteString("update" + modelArray + "(filter: " + model.Name + "Filter, input: " + modelArray + "Input!)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "UpdatePayload!")
 				schema.WriteString("\n")
@@ -442,16 +357,16 @@ func getSchema(
 			// delete single
 			// e.g deleteUser(id: ID!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("delete" + model + "(id: ID!)")
+			schema.WriteString("delete" + model.Name + "(id: ID!)")
 			schema.WriteString(": ")
-			schema.WriteString(model + "DeletePayload!")
+			schema.WriteString(model.Name + "DeletePayload!")
 			schema.WriteString("\n")
 
 			// delete multiple
 			// e.g deleteUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
 			if batchDelete {
 				schema.WriteString(indent)
-				schema.WriteString("delete" + modelArray + "(filter: " + model + "Filter)")
+				schema.WriteString("delete" + modelArray + "(filter: " + model.Name + "Filter)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "DeletePayload!")
 				schema.WriteString("\n")
@@ -465,6 +380,136 @@ func getSchema(
 	return schema.String()
 }
 
+func getModelsAndFields(boilerTypes []*BoilerType) []*Model {
+
+	sortedModelNames := []string{}
+	fieldsPerModelName := map[string][]*Field{}
+
+	var addFieldsToModel = func(modelName string, field *Field) {
+		sortedModelNames = appendIfMissing(sortedModelNames, modelName)
+		_, ok := fieldsPerModelName[modelName]
+		if !ok {
+			fieldsPerModelName[modelName] = []*Field{}
+		}
+		fieldsPerModelName[modelName] = append(fieldsPerModelName[modelName], field)
+	}
+
+	for _, boiler := range boilerTypes {
+
+		// split on . input is like e.g. User.ID
+		splitted := strings.Split(boiler.Name, ".")
+		// result in e.g. User
+		modelName := splitted[0]
+		// result in e.g. ID
+		boilerFieldName := splitted[1]
+
+		// handle names with lowercase e.g. userR, userL or other sqlboiler extra's
+		if isFirstCharacterLowerCase(modelName) {
+
+			// It's the relations of the model
+			// let's add them so we can use them later
+			if strings.HasSuffix(modelName, "R") {
+				modelName = strcase.ToCamel(strings.TrimSuffix(modelName, "R"))
+				relationField := toField(boilerFieldName, boiler.Type)
+				relationField.IsRelation = true
+				addFieldsToModel(modelName, relationField)
+			}
+
+			// ignore the default handling since this field is already handled
+			continue
+		}
+
+		// Ignore these since these are sqlboiler helper structs for preloading relationships
+		if boilerFieldName == "L" || boilerFieldName == "R" {
+			continue
+		}
+
+		addFieldsToModel(modelName, toField(boilerFieldName, boiler.Type))
+	}
+
+	models := make([]*Model, len(sortedModelNames))
+	for i, sortedModelName := range sortedModelNames {
+		fields := fieldsPerModelName[sortedModelName]
+		models[i] = &Model{
+			Name:   sortedModelName,
+			Fields: fields,
+		}
+	}
+	return models
+}
+
+// getSortedBoilerTypes orders the sqlboiler struct in an ordered slice of BoilerType
+func getSortedBoilerTypes(modelDirectory string) (sortedBoilerTypes []*BoilerType) {
+	boilerTypeMap, _, boilerTypeOrder := boiler.ParseBoilerFile(modelDirectory)
+
+	boilerTypeKeys := make([]string, 0, len(boilerTypeMap))
+	for k := range boilerTypeMap {
+		boilerTypeKeys = append(boilerTypeKeys, k)
+	}
+
+	// order same way as sqlboiler fields with one exception
+	// let createdAt, updatedAt and deletedAt as last
+	sort.Slice(boilerTypeKeys, func(i, b int) bool {
+
+		aKey := boilerTypeKeys[i]
+		bKey := boilerTypeKeys[b]
+
+		aOrder := boilerTypeOrder[aKey]
+		bOrder := boilerTypeOrder[bKey]
+
+		higherOrders := []string{"createdat", "updatedat", "deletedat"}
+		for i, higherOrder := range higherOrders {
+			if strings.HasSuffix(strings.ToLower(aKey), higherOrder) {
+				aOrder += 1000000 + i
+			}
+			if strings.HasSuffix(strings.ToLower(bKey), higherOrder) {
+				bOrder += 10000000 + i
+			}
+		}
+
+		return aOrder < bOrder
+	})
+
+	for _, modelAndField := range boilerTypeKeys {
+		sortedBoilerTypes = append(sortedBoilerTypes, &BoilerType{
+			Name: modelAndField,
+			Type: boilerTypeMap[modelAndField],
+		})
+	}
+	return
+}
+
+func relationExist(field *Field, fields []*Field) bool {
+	// e.g we have foreign key from user to organization
+	// organizationID is clutter in your scheme
+	// you only want Organization and OrganizationID should be skipped
+
+	// ID can't possible be a relationship
+	if field.BoilerName == "ID" {
+		return false
+	}
+
+	// Ok, if it ends on ID it could have a relation ship
+	if strings.HasSuffix(field.BoilerName, "ID") {
+		for _, checkWithField := range fields {
+			// don't compare to itself
+			if field == checkWithField {
+				continue
+			}
+
+			if checkWithField.BoilerName == strings.TrimSuffix(field.BoilerName, "ID") && checkWithField.IsRelation {
+				// fmt.Println("Remove from fields")
+				// fmt.Println(checkWithField.BoilerName)
+				// fmt.Println(strings.TrimSuffix(field.BoilerName, "ID"))
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
+
 func isRequired(boilerType string) bool {
 	if strings.HasPrefix(boilerType, "null.") || strings.HasPrefix(boilerType, "*") {
 		return false
@@ -475,16 +520,37 @@ func isRequired(boilerType string) bool {
 func isArray(boilerType string) bool {
 	return strings.HasSuffix(boilerType, "Slice")
 }
+
+func getFullType(fieldType string, isArray bool, isRequired bool) string {
+	gType := fieldType
+
+	if isArray {
+		// To use a list type, surround the type in square brackets, so [Int] is a list of integers.
+		gType = "[" + gType + "]"
+	}
+	if isRequired {
+		// Use an exclamation point to indicate a type cannot be nullable,
+		// so String! is a non-nullable string.
+		gType = gType + "!"
+	}
+	return gType
+}
+
 func toField(boilerName, boilerType string) *Field {
+	t := toGraphQLType(boilerName, boilerType)
+	array := isArray(boilerType)
+	required := isRequired(boilerType)
 	return &Field{
 		Name:       toGraphQLName(boilerName, boilerType),
-		Type:       toGraphQLType(boilerName, boilerType),
+		Type:       t,
+		FullType:   getFullType(t, array, required),
 		BoilerName: boilerName,
 		BoilerType: boilerType,
-		IsRequired: isRequired(boilerType),
-		IsArray:    isArray(boilerType),
+		IsRequired: required,
+		IsArray:    array,
 	}
 }
+
 func toGraphQLName(fieldName, boilerType string) string {
 	graphqlName := fieldName
 
@@ -504,6 +570,7 @@ func toGraphQLName(fieldName, boilerType string) string {
 
 	return strcase.ToLowerCamel(graphqlName)
 }
+
 func toGraphQLType(fieldName, boilerType string) string {
 	lowerFieldName := strings.ToLower(fieldName)
 	lowerBoilerType := strings.ToLower(boilerType)
@@ -540,4 +607,13 @@ func isFirstCharacterLowerCase(s string) bool {
 		return true
 	}
 	return false
+}
+
+func appendIfMissing(slice []string, i string) []string {
+	for _, ele := range slice {
+		if ele == i {
+			return slice
+		}
+	}
+	return append(slice, i)
 }
