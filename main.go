@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/micro/cli"
 	"github.com/web-ridge/gqlgen-sqlboiler/boiler"
@@ -9,6 +10,14 @@ import (
 	"os"
 	"strings"
 )
+
+var pluralizer *pluralize.Client
+
+func init() {
+	pluralizer = pluralize.NewClient()
+}
+
+const indent = "  "
 
 type Model struct {
 	Name       string
@@ -78,7 +87,7 @@ func main() {
 						if !ok {
 							relationsPerModel[modelName] = []*Field{}
 						}
-						fmt.Println("adding relation " + fieldName + " to " + modelName + " ")
+						// fmt.Println("adding relation " + fieldName + " to " + modelName + " ")
 						relationsPerModel[modelName] = append(relationsPerModel[modelName], &Field{
 							Name:       fieldName,
 							Type:       toGraphQLType(fieldName, boilerType),
@@ -128,13 +137,40 @@ func main() {
 						// so String! is a non-nullable string.
 						gType = gType + "!"
 					}
-					schema.WriteString("        " + field.Name + " : " + gType)
+
+					gName := strcase.ToLowerCamel(field.Name)
+					gName = strings.Replace(gName, "iD", "id", -1)
+					if strings.HasSuffix(gName, "ID") {
+						gName = strings.TrimSuffix(gName, "ID")
+						gName = gName + "Id"
+					}
+
+					schema.WriteString(indent + gName + " : " + gType)
 					schema.WriteString("\n")
 				}
 				schema.WriteString("}")
 				schema.WriteString("\n")
 			}
 
+			schema.WriteString("type Query {")
+			schema.WriteString("\n")
+			for model, _ := range fieldPerModel {
+				schema.WriteString(indent)
+				schema.WriteString(strcase.ToLowerCamel(model) + "(id: ID!)")
+				schema.WriteString(":")
+				schema.WriteString(model + "!")
+				schema.WriteString("\n")
+
+				modelArray := pluralizer.Plural(model)
+				schema.WriteString(indent)
+				schema.WriteString(strcase.ToLowerCamel(modelArray) + "")
+				schema.WriteString(":")
+				schema.WriteString("[" + model + "!]!")
+				schema.WriteString("\n")
+
+			}
+			schema.WriteString("}")
+			schema.WriteString("\n")
 			fmt.Println(schema.String())
 
 			return nil
