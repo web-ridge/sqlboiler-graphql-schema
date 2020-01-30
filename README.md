@@ -51,6 +51,7 @@ GLOBAL OPTIONS:
 
 ## Future roadmap
 
+- Tests / snapshots
 - Edges / connections
 - Detecting when relationship is many to many
 - Adding node from to many-to-many relationships
