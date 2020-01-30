@@ -24,29 +24,6 @@ Feel free to help and make a PR.
 go run github.com/webridge-git/sqlboiler-graphql-schema
 ```
 
-## How to detect many to many (notes to myself)
-
-```golang
-User {
-    UserOrganizations []UserOrganization
-    Posts []Post
-}
-
-Post {
-    User User
-    Message string
-}
-
-UserOrganization {
-    User User
-    Organization Organization
-}
-
-Organization {
-    Users []User
-}
-```
-
 ### Possible detection
 
 if table has only 2 relationship and table contains both tables
@@ -133,3 +110,26 @@ query(filter: {
 
 })
 ````
+
+## How to detect many to many (notes to myself)
+
+```golang
+User {
+    UserOrganizations []UserOrganization
+    Posts []Post
+}
+
+Post {
+    User User
+    Message string
+}
+
+UserOrganization {
+    User User
+    Organization Organization
+}
+
+Organization {
+    Users []User
+}
+```
