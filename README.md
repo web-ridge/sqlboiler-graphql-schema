@@ -9,6 +9,7 @@ You can edit your schema like you want later and re-generate if your database ch
 `go run github.com/web-ridge/sqlboiler-graphql-schema`
 
 ## Before running
+
 - Install prettier globally (https://prettier.io/ `yarn global add prettier`)
 - Install git command line (required to do three way merging)
 
@@ -37,6 +38,7 @@ GLOBAL OPTIONS:
 
 ## Features
 
+- Support for manual updating the schema and re-generating (doing a three way merge https://github.com/charlesvdv/go-three-way-merge)
 - Generating basic models (100%)
 - Generating basic queries (100%)
 - Generating filter for array queries (100%)
@@ -49,7 +51,6 @@ GLOBAL OPTIONS:
 
 ## Future roadmap
 
-- Three way diff merge https://github.com/charlesvdv/go-three-way-merge to support manual updating the schema and re-generating
 - Edges / connections
 - Detecting when relationship is many to many
 - Adding node from to many-to-many relationships

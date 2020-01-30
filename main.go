@@ -75,9 +75,17 @@ func main() {
 			// TODO: Write schema to the configured location
 			if fileExists(outputFile) {
 
-				newOutputFile := filenameWithoutExtension(outputFile) +
-					"-conflict-with-new-schema" +
+				baseFile := filenameWithoutExtension(outputFile) +
+					"-empty" +
 					getFilenameExtension(outputFile)
+
+				newOutputFile := filenameWithoutExtension(outputFile) +
+					"-new" +
+					getFilenameExtension(outputFile)
+
+				// remove previous files if exist
+				os.Remove(baseFile)
+				os.Remove(newOutputFile)
 
 				if err := writeContentToFile(newOutputFile, schema); err != nil {
 					return fmt.Errorf("Could not write schema to disk: %v", err)
@@ -89,17 +97,34 @@ func main() {
 					return fmt.Errorf("Could not format with prettier %v: %v", newOutputFile, err)
 				}
 
-				fmt.Println(fmt.Sprintf("Trying to do a git-merge-file on %v and %v", outputFile, newOutputFile))
+				// Three way merging done based on this answer
+				// https://stackoverflow.com/a/9123563/2508481
 
-				name := "git"
-				args := []string{"merge-file", outputFile, newOutputFile, newOutputFile}
-				fmt.Println("Executing command: ", name, strings.Join(args, " "))
+				// Empty file as base per the stackoverflow answer
+				name := "touch"
+				args := []string{baseFile}
 				out, err := exec.Command(name, args...).Output()
 				if err != nil {
+					fmt.Println("Executing command failed: ", name, strings.Join(args, " "))
 					return fmt.Errorf("Merging failed %v: %v", err, out)
 				}
 
-				fmt.Println("Merging done, please resolve the conflicts: ", out)
+				// Let's do the merge
+				name = "git"
+				args = []string{"merge-file", outputFile, baseFile, newOutputFile}
+				out, err = exec.Command(name, args...).Output()
+				if err != nil {
+					fmt.Println("Executing command failed: ", name, strings.Join(args, " "))
+					// remove base file
+					os.Remove(baseFile)
+					return fmt.Errorf("Merging failed or had conflicts %v: %v", err, out)
+				}
+
+				fmt.Println("Merging done without conflicts: ", out)
+
+				// remove files
+				os.Remove(baseFile)
+				os.Remove(newOutputFile)
 
 				// fmt.Printf("The date is %s\n", out)
 
@@ -108,7 +133,7 @@ func main() {
 				if err := writeContentToFile(outputFile, schema); err != nil {
 					fmt.Println("Could not write schema to disk: ", err)
 				}
-				formatFile(outputFile)
+				return formatFile(outputFile)
 			}
 
 			return nil
@@ -121,22 +146,24 @@ func main() {
 	}
 
 }
+
 func getFilenameExtension(fn string) string {
 	return path.Ext(fn)
 }
+
 func filenameWithoutExtension(fn string) string {
 	return strings.TrimSuffix(fn, path.Ext(fn))
 }
+
 func formatFile(filename string) error {
 	name := "prettier"
 	args := []string{filename, "--write"}
-	fmt.Println("Executing command: ", name, strings.Join(args, " "))
+
 	out, err := exec.Command(name, args...).Output()
 	if err != nil {
-		fmt.Println("Formatting failed: ", err, out)
-		return err
+		return fmt.Errorf("Executing command: '%v %v' failed with: %v, output: %v", name, strings.Join(args, " "), err, out)
 	}
-	fmt.Println(fmt.Sprintf("Formatting of %v done", filename))
+	// fmt.Println(fmt.Sprintf("Formatting of %v done", filename))
 	return nil
 }
 
@@ -259,6 +286,7 @@ func getSchema(
 		}
 		schema.WriteString("}")
 		schema.WriteString("\n")
+		schema.WriteString("\n")
 	}
 
 	// Add helpers for filtering lists
@@ -283,6 +311,7 @@ func getSchema(
 		schema.WriteString("\n")
 		schema.WriteString("}")
 		schema.WriteString("\n")
+		schema.WriteString("\n")
 		// Generate a where struct
 		// type UserWhere {
 		// 	id: IDFilter
@@ -302,7 +331,6 @@ func getSchema(
 				schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
 				schema.WriteString("\n")
 			}
-
 		}
 		schema.WriteString(indent + "or: " + model.Name + "Where")
 		schema.WriteString("\n")
@@ -311,6 +339,7 @@ func getSchema(
 		schema.WriteString("\n")
 
 		schema.WriteString("}")
+		schema.WriteString("\n")
 		schema.WriteString("\n")
 	}
 
@@ -336,6 +365,7 @@ func getSchema(
 	}
 	schema.WriteString("}")
 	schema.WriteString("\n")
+	schema.WriteString("\n")
 
 	// Generate input and payloads for mutatations
 	if mutations {
@@ -359,6 +389,7 @@ func getSchema(
 			}
 			schema.WriteString("}")
 			schema.WriteString("\n")
+			schema.WriteString("\n")
 
 			// type UserPayload {
 			// 	user: User!
@@ -368,6 +399,7 @@ func getSchema(
 			schema.WriteString(indent + strcase.ToLowerCamel(model.Name) + ": " + model.Name + "!")
 			schema.WriteString("\n")
 			schema.WriteString("}")
+			schema.WriteString("\n")
 			schema.WriteString("\n")
 
 			// TODO batch, delete input and payloads
@@ -381,6 +413,7 @@ func getSchema(
 			schema.WriteString("\n")
 			schema.WriteString("}")
 			schema.WriteString("\n")
+			schema.WriteString("\n")
 			// type UsersDeletePayload {
 			// 	ids: [ID!]!
 			// }
@@ -390,6 +423,7 @@ func getSchema(
 				schema.WriteString(indent + "ids: [ID!]!")
 				schema.WriteString("\n")
 				schema.WriteString("}")
+				schema.WriteString("\n")
 				schema.WriteString("\n")
 			}
 			// type UsersUpdatePayload {
@@ -401,6 +435,7 @@ func getSchema(
 				schema.WriteString(indent + "ok: Boolean!")
 				schema.WriteString("\n")
 				schema.WriteString("}")
+				schema.WriteString("\n")
 				schema.WriteString("\n")
 			}
 
@@ -473,6 +508,7 @@ func getSchema(
 		}
 		schema.WriteString("}")
 		schema.WriteString("\n")
+		schema.WriteString("\n")
 	}
 
 	return schema.String()
@@ -484,7 +520,7 @@ func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 
 	// sortedModelNames is needed to get the right order back of the models since we want the same order every time
 	// this program has ran.
-	sortedModelNames := []string{}
+	modelNames := []string{}
 
 	// fieldsPerModelName is needed to group the fields per model, so we can get all fields per modelName later on
 	fieldsPerModelName := map[string][]*Field{}
@@ -492,7 +528,7 @@ func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 	// Anonymous function because this is used 2 times it prevents duplicated code
 	// It's automatically inits an empty field array if it does not exist yet
 	var addFieldsToModel = func(modelName string, field *Field) {
-		sortedModelNames = appendIfMissing(sortedModelNames, modelName)
+		modelNames = appendIfMissing(modelNames, modelName)
 		_, ok := fieldsPerModelName[modelName]
 		if !ok {
 			fieldsPerModelName[modelName] = []*Field{}
@@ -533,13 +569,14 @@ func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 
 		addFieldsToModel(modelName, toField(boilerFieldName, boiler.Type))
 	}
+	sort.Strings(modelNames)
 
 	// Let's generate the models in the same order as the sqlboiler structs were parsed
-	models := make([]*Model, len(sortedModelNames))
-	for i, sortedModelName := range sortedModelNames {
-		fields := fieldsPerModelName[sortedModelName]
+	models := make([]*Model, len(modelNames))
+	for i, modelName := range modelNames {
+		fields := fieldsPerModelName[modelName]
 		models[i] = &Model{
-			Name:   sortedModelName,
+			Name:   modelName,
 			Fields: fields,
 		}
 	}
@@ -579,6 +616,7 @@ func getSortedBoilerTypes(modelDirectory string) (sortedBoilerTypes []*BoilerTyp
 	})
 
 	for _, modelAndField := range boilerTypeKeys {
+		// fmt.Println(modelAndField)
 		sortedBoilerTypes = append(sortedBoilerTypes, &BoilerType{
 			Name: modelAndField,
 			Type: boilerTypeMap[modelAndField],
