@@ -66,7 +66,11 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
+
+			// Generate schema based on config
 			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete)
+
+			// TODO: Write schema to the configured location
 			fmt.Println(schema)
 			return nil
 		},
@@ -141,10 +145,16 @@ func getSchema(
 ) string {
 	var schema strings.Builder
 
-	fmt.Println("YES YES YES")
+	// Parse models and their fields based on the sqlboiler model directory
+	models := parseModelsAndFieldsFromBoiler(getSortedBoilerTypes(modelDirectory))
 
-	models := getModelsAndFields(getSortedBoilerTypes(modelDirectory))
-
+	// Create basic structs e.g.
+	// type User {
+	// 	firstName: String!
+	// 	lastName: String
+	// 	isProgrammer: Boolean!
+	// 	organization: Organization!
+	// }
 	for _, model := range models {
 
 		schema.WriteString("type " + model.Name + " {")
@@ -380,11 +390,19 @@ func getSchema(
 	return schema.String()
 }
 
-func getModelsAndFields(boilerTypes []*BoilerType) []*Model {
+// parseModelsAndFieldsFromBoiler since these are like User.ID, User.Organization and we want them grouped by
+// modelName and their belonging fields.
+func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 
+	// sortedModelNames is needed to get the right order back of the models since we want the same order every time
+	// this program has ran.
 	sortedModelNames := []string{}
+
+	// fieldsPerModelName is needed to group the fields per model, so we can get all fields per modelName later on
 	fieldsPerModelName := map[string][]*Field{}
 
+	// Anonymous function because this is used 2 times it prevents duplicated code
+	// It's automatically inits an empty field array if it does not exist yet
 	var addFieldsToModel = func(modelName string, field *Field) {
 		sortedModelNames = appendIfMissing(sortedModelNames, modelName)
 		_, ok := fieldsPerModelName[modelName]
@@ -394,6 +412,7 @@ func getModelsAndFields(boilerTypes []*BoilerType) []*Model {
 		fieldsPerModelName[modelName] = append(fieldsPerModelName[modelName], field)
 	}
 
+	// Let's parse boilerTypes to models and fields
 	for _, boiler := range boilerTypes {
 
 		// split on . input is like e.g. User.ID
@@ -427,6 +446,7 @@ func getModelsAndFields(boilerTypes []*BoilerType) []*Model {
 		addFieldsToModel(modelName, toField(boilerFieldName, boiler.Type))
 	}
 
+	// Let's generate the models in the same order as the sqlboiler structs were parsed
 	models := make([]*Model, len(sortedModelNames))
 	for i, sortedModelName := range sortedModelNames {
 		fields := fieldsPerModelName[sortedModelName]
