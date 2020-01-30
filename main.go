@@ -253,6 +253,7 @@ func main() {
 
 			// Generate input and payloads for mutatations
 			for model, fields := range fieldPerModel {
+				modelArray := pluralizer.Plural(model)
 				// input UserInput {
 				// 	firstName: String!
 				// 	lastName: String
@@ -278,6 +279,34 @@ func main() {
 				schema.WriteString("\n")
 
 				// TODO batch, delete input and payloads
+
+				// type UserDeletePayload {
+				// 	id: ID!
+				// }
+				schema.WriteString("type " + model + "DeletePayload {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + "id: ID!")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+				// type UsersDeletePayload {
+				// 	ids: [ID!]!
+				// }
+				schema.WriteString("type " + modelArray + "DeletePayload {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + "ids: [ID!]!")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+				// type UsersUpdatePayload {
+				// 	ok: Boolean!
+				// }
+				schema.WriteString("type " + modelArray + "UpdatePayload {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + "ok: Boolean!")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
 
 			}
 
@@ -318,7 +347,7 @@ func main() {
 				schema.WriteString(indent)
 				schema.WriteString("update" + modelArray + "(filter: " + model + "Filter, input: " + modelArray + "Input!)")
 				schema.WriteString(": ")
-				schema.WriteString(modelArray + "Payload!")
+				schema.WriteString(modelArray + "UpdatePayload!")
 				schema.WriteString("\n")
 
 				// delete single
