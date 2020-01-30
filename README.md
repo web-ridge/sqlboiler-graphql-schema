@@ -26,7 +26,7 @@ go run github.com/webridge-git/sqlboiler-graphql-schema
 
 ## How to detect many to many (notes to myself)
 
-```go
+```golang
 User {
     UserOrganizations []UserOrganization
     Posts []Post
