@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"path"
 	"sort"
 	"strings"
 
@@ -71,7 +73,44 @@ func main() {
 			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete)
 
 			// TODO: Write schema to the configured location
-			fmt.Println(schema)
+			if fileExists(outputFile) {
+
+				newOutputFile := filenameWithoutExtension(outputFile) +
+					"-conflict-with-new-schema" +
+					getFilenameExtension(outputFile)
+
+				if err := writeContentToFile(newOutputFile, schema); err != nil {
+					return fmt.Errorf("Could not write schema to disk: %v", err)
+				}
+				if err := formatFile(outputFile); err != nil {
+					return fmt.Errorf("Could not format with prettier %v: %v", outputFile, err)
+				}
+				if err := formatFile(newOutputFile); err != nil {
+					return fmt.Errorf("Could not format with prettier %v: %v", newOutputFile, err)
+				}
+
+				fmt.Println(fmt.Sprintf("Trying to do a git-merge-file on %v and %v", outputFile, newOutputFile))
+
+				name := "git"
+				args := []string{"merge-file", outputFile, newOutputFile, newOutputFile}
+				fmt.Println("Executing command: ", name, strings.Join(args, " "))
+				out, err := exec.Command(name, args...).Output()
+				if err != nil {
+					return fmt.Errorf("Merging failed %v: %v", err, out)
+				}
+
+				fmt.Println("Merging done, please resolve the conflicts: ", out)
+
+				// fmt.Printf("The date is %s\n", out)
+
+			} else {
+				fmt.Println(fmt.Sprintf("Write schema of %v bytes to %v", len(schema), outputFile))
+				if err := writeContentToFile(outputFile, schema); err != nil {
+					fmt.Println("Could not write schema to disk: ", err)
+				}
+				formatFile(outputFile)
+			}
+
 			return nil
 		},
 	}
@@ -81,6 +120,55 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+func getFilenameExtension(fn string) string {
+	return path.Ext(fn)
+}
+func filenameWithoutExtension(fn string) string {
+	return strings.TrimSuffix(fn, path.Ext(fn))
+}
+func formatFile(filename string) error {
+	name := "prettier"
+	args := []string{filename, "--write"}
+	fmt.Println("Executing command: ", name, strings.Join(args, " "))
+	out, err := exec.Command(name, args...).Output()
+	if err != nil {
+		fmt.Println("Formatting failed: ", err, out)
+		return err
+	}
+	fmt.Println(fmt.Sprintf("Formatting of %v done", filename))
+	return nil
+}
+
+func writeContentToFile(filename string, content string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("could not write %v to disk: %v", filename, err)
+	}
+
+	// Close file if this functions returns early or at the end
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			fmt.Println("Error while closing file: ", closeErr)
+		}
+	}()
+
+	if _, err := file.WriteString(content); err != nil {
+		return fmt.Errorf("could not write content to file %v: %v", filename, err)
+	}
+
+	return nil
+}
+
+// fileExists checks if a file exists and is not a directory before we
+// try using it to prevent further errors.
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 const queryHelperStructs = `
