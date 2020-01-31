@@ -316,7 +316,7 @@ func getSchema(
 		// 	search: String
 		// 	where: UserWhere
 		// }
-		schema.WriteString("type " + model.Name + "Filter {")
+		schema.WriteString("input " + model.Name + "Filter {")
 		schema.WriteString("\n")
 		schema.WriteString(indent + "search: String")
 		schema.WriteString("\n")
@@ -333,7 +333,7 @@ func getSchema(
 		// 	or: FlowBlockWhere
 		// 	and: FlowBlockWhere
 		// }
-		schema.WriteString("type " + model.Name + "Where {")
+		schema.WriteString("input " + model.Name + "Where {")
 		schema.WriteString("\n")
 		for _, field := range model.Fields {
 			if field.IsRelation {
