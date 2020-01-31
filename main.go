@@ -203,6 +203,7 @@ type IDFilter {
 	in: [ID!]
 	notIn: [ID!]
 }
+
 type StringFilter {
 	equalTo: String
 	in: [String!]
@@ -216,6 +217,7 @@ type StringFilter {
 	endsWithStrict: String # Camel sensitive
 	containsStrict: String # Camel sensitive
 }
+
 type IntegerFilter {
 	equalTo: Int
 	lessThan: Int
@@ -225,6 +227,17 @@ type IntegerFilter {
 	in: [Int!]
 	notIn: [Int!]
 }
+
+type FloatFilter {
+	equalTo: Float
+	lessThan: Float
+	lessThanOrEqualTo: Float
+	moreThan: Float
+	moreThanOrEqualTo: Float
+	in: [Float!]
+	notIn: [Float!]
+}
+
 type BooleanFilter {
 	equalTo: Boolean
 }
