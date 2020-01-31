@@ -199,12 +199,12 @@ func fileExists(filename string) bool {
 }
 
 const queryHelperStructs = `
-type IDFilter {
+input IDFilter {
 	in: [ID!]
 	notIn: [ID!]
 }
 
-type StringFilter {
+input StringFilter {
 	equalTo: String
 	in: [String!]
 	notIn: [String!]
@@ -218,7 +218,7 @@ type StringFilter {
 	containsStrict: String # Camel sensitive
 }
 
-type IntFilter {
+input IntFilter {
 	equalTo: Int
 	lessThan: Int
 	lessThanOrEqualTo: Int
@@ -228,7 +228,7 @@ type IntFilter {
 	notIn: [Int!]
 }
 
-type FloatFilter {
+input FloatFilter {
 	equalTo: Float
 	lessThan: Float
 	lessThanOrEqualTo: Float
@@ -238,7 +238,7 @@ type FloatFilter {
 	notIn: [Float!]
 }
 
-type BooleanFilter {
+input BooleanFilter {
 	equalTo: Boolean
 }
 `
@@ -404,6 +404,15 @@ func getSchema(
 			schema.WriteString("\n")
 			schema.WriteString("\n")
 
+			if batchCreate {
+				schema.WriteString("input " + modelArray + "Input {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "Input!]!")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+				schema.WriteString("\n")
+			}
+
 			// type UserPayload {
 			// 	user: User!
 			// }
@@ -427,6 +436,20 @@ func getSchema(
 			schema.WriteString("}")
 			schema.WriteString("\n")
 			schema.WriteString("\n")
+
+			// type UsersPayload {
+			// 	ids: [ID!]!
+			// }
+			if batchCreate {
+				schema.WriteString("type " + modelArray + "Payload {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "!]!")
+				schema.WriteString("\n")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+				schema.WriteString("\n")
+			}
+
 			// type UsersDeletePayload {
 			// 	ids: [ID!]!
 			// }
