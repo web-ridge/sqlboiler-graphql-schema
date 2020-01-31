@@ -218,7 +218,7 @@ type StringFilter {
 	containsStrict: String # Camel sensitive
 }
 
-type IntegerFilter {
+type IntFilter {
 	equalTo: Int
 	lessThan: Int
 	lessThanOrEqualTo: Int
