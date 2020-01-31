@@ -199,11 +199,11 @@ func fileExists(filename string) bool {
 }
 
 const queryHelperStructs = `
-type FilterID {
+type IDFilter {
 	in: [ID!]
 	notIn: [ID!]
 }
-type FilterString {
+type StringFilter {
 	equalTo: String
 	in: [String!]
 	notIn: [String!]
@@ -216,7 +216,7 @@ type FilterString {
 	endsWithStrict: String # Camel sensitive
 	containsStrict: String # Camel sensitive
 }
-type FilterInteger {
+type IntegerFilter {
 	equalTo: Int
 	lessThan: Int
 	lessThanOrEqualTo: Int
@@ -225,7 +225,7 @@ type FilterInteger {
 	in: [Int!]
 	notIn: [Int!]
 }
-type FilterBoolean {
+type BooleanFilter {
 	equalTo: Boolean
 }
 `
