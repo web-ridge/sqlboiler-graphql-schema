@@ -13,6 +13,10 @@ You can edit your schema like you want later and re-generate if your database ch
 - Install prettier globally (https://prettier.io/ `yarn global add prettier`)
 - Install git command line (required to do three way merging)
 
+## Other related projects from webRidge
+- https://github.com/web-ridge/gqlgen-sqlboiler (Generates converts between your qqlgen scheme and sqlboiler, and in the future will generate basic resolvers)
+- https://github.com/web-ridge/graphql-schema-react-native-app (Generated React Native (Web) app based on your GraphQL scheme, not finished yet.)
+
 ## Options
 
 ```
