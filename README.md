@@ -14,6 +14,7 @@ You can edit your schema like you want later and re-generate if your database ch
 - Install git command line (required to do three way merging)
 
 ## Other related projects from webRidge
+
 - https://github.com/web-ridge/gqlgen-sqlboiler (Generates converts between your qqlgen scheme and sqlboiler, and in the future will generate basic resolvers)
 - https://github.com/web-ridge/graphql-schema-react-native-app (Generated React Native (Web) app based on your GraphQL scheme, not finished yet.)
 
@@ -89,9 +90,9 @@ type Address {
   userOrganization: UserOrganization!
   calamities: [Calamity]!
   people: [Person]!
-  createdAt: Int
   deletedAt: Int
   updatedAt: Int
+  createdAt: Int
 }
 
 type AddressStatus {
@@ -102,9 +103,9 @@ type AddressStatus {
   order: Int!
   color: String!
   addresses: [Address]!
+  deletedAt: Int
   createdAt: Int
   updatedAt: Int
-  deletedAt: Int
 }
 
 type Calamity {
@@ -140,8 +141,8 @@ type Calamity {
   calamityAttributes: [CalamityAttribute]!
   calamityTags: [CalamityTag]!
   createdAt: Int
-  updatedAt: Int
   deletedAt: Int
+  updatedAt: Int
 }
 
 type CalamityAttribute {
@@ -161,8 +162,8 @@ type CalamityPicture {
   url: String!
   calamityId: ID!
   deletedAt: Int
-  createdAt: Int
   updatedAt: Int
+  createdAt: Int
 }
 
 type CalamityTag {
@@ -181,9 +182,9 @@ type CalamityType {
   defaultM2: Float!
   userOrganization: UserOrganization!
   calamities: [Calamity]!
+  deletedAt: Int
   updatedAt: Int
   createdAt: Int
-  deletedAt: Int
 }
 
 type Company {
@@ -205,9 +206,9 @@ type CompanyUser {
   id: ID!
   company: Company!
   user: User!
-  deletedAt: Int
   updatedAt: Int
   createdAt: Int
+  deletedAt: Int
 }
 
 type FailedJob {
@@ -228,8 +229,8 @@ type HouseType {
   userOrganization: UserOrganization!
   addresses: [Address]!
   calamities: [Calamity]!
-  deletedAt: Int
   updatedAt: Int
+  deletedAt: Int
   createdAt: Int
 }
 
@@ -253,8 +254,8 @@ type Person {
   userOrganization: UserOrganization!
   contactPersonAddresses: [Address]!
   ownerAddresses: [Address]!
-  deletedAt: Int
   createdAt: Int
+  deletedAt: Int
   updatedAt: Int
 }
 
@@ -264,9 +265,9 @@ type Role {
   icon: String
   description: String
   users: [User]!
+  createdAt: Int
   updatedAt: Int
   deletedAt: Int
-  createdAt: Int
 }
 
 type Status {
@@ -277,9 +278,9 @@ type Status {
   color: String
   iconThumb: String
   calamities: [Calamity]!
-  updatedAt: Int
-  createdAt: Int
   deletedAt: Int
+  createdAt: Int
+  updatedAt: Int
 }
 
 type Tag {
@@ -288,8 +289,8 @@ type Tag {
   image: String
   userOrganization: UserOrganization!
   calamityTags: [CalamityTag]!
-  createdAt: Int
   updatedAt: Int
+  createdAt: Int
   deletedAt: Int
 }
 
@@ -305,8 +306,8 @@ type User {
   calamities: [Calamity]!
   companyUsers: [CompanyUser]!
   userUserOrganizations: [UserUserOrganization]!
-  createdAt: Int
   deletedAt: Int
+  createdAt: Int
   updatedAt: Int
 }
 
@@ -337,9 +338,9 @@ type UserOrganization {
   people: [Person]!
   tags: [Tag]!
   userUserOrganizations: [UserUserOrganization]!
-  createdAt: Int
-  updatedAt: Int
   deletedAt: Int
+  updatedAt: Int
+  createdAt: Int
 }
 
 type UserUserOrganization {
@@ -348,11 +349,12 @@ type UserUserOrganization {
   userOrganization: UserOrganization!
 }
 
-type FilterID {
+input IDFilter {
   in: [ID!]
   notIn: [ID!]
 }
-type FilterString {
+
+input StringFilter {
   equalTo: String
   in: [String!]
   notIn: [String!]
@@ -365,7 +367,8 @@ type FilterString {
   endsWithStrict: String # Camel sensitive
   containsStrict: String # Camel sensitive
 }
-type FilterInteger {
+
+input IntFilter {
   equalTo: Int
   lessThan: Int
   lessThanOrEqualTo: Int
@@ -374,16 +377,27 @@ type FilterInteger {
   in: [Int!]
   notIn: [Int!]
 }
-type FilterBoolean {
+
+input FloatFilter {
+  equalTo: Float
+  lessThan: Float
+  lessThanOrEqualTo: Float
+  moreThan: Float
+  moreThanOrEqualTo: Float
+  in: [Float!]
+  notIn: [Float!]
+}
+
+input BooleanFilter {
   equalTo: Boolean
 }
 
-type AddressFilter {
+input AddressFilter {
   search: String
   where: AddressWhere
 }
 
-type AddressWhere {
+input AddressWhere {
   id: IDFilter
   street: StringFilter
   houseNumber: StringFilter
@@ -408,19 +422,19 @@ type AddressWhere {
   userOrganization: UserOrganizationWhere
   calamities: CalamityWhere
   people: PersonWhere
-  createdAt: IntFilter
   deletedAt: IntFilter
   updatedAt: IntFilter
+  createdAt: IntFilter
   or: AddressWhere
   and: AddressWhere
 }
 
-type AddressStatusFilter {
+input AddressStatusFilter {
   search: String
   where: AddressStatusWhere
 }
 
-type AddressStatusWhere {
+input AddressStatusWhere {
   id: IDFilter
   name: StringFilter
   icon: StringFilter
@@ -428,19 +442,19 @@ type AddressStatusWhere {
   order: IntFilter
   color: StringFilter
   addresses: AddressWhere
+  deletedAt: IntFilter
   createdAt: IntFilter
   updatedAt: IntFilter
-  deletedAt: IntFilter
   or: AddressStatusWhere
   and: AddressStatusWhere
 }
 
-type CalamityFilter {
+input CalamityFilter {
   search: String
   where: CalamityWhere
 }
 
-type CalamityWhere {
+input CalamityWhere {
   id: IDFilter
   parentId: IDFilter
   description: StringFilter
@@ -481,18 +495,18 @@ type CalamityWhere {
   calamityAttributes: CalamityAttributeWhere
   calamityTags: CalamityTagWhere
   createdAt: IntFilter
-  updatedAt: IntFilter
   deletedAt: IntFilter
+  updatedAt: IntFilter
   or: CalamityWhere
   and: CalamityWhere
 }
 
-type CalamityAttributeFilter {
+input CalamityAttributeFilter {
   search: String
   where: CalamityAttributeWhere
 }
 
-type CalamityAttributeWhere {
+input CalamityAttributeWhere {
   id: IDFilter
   key: StringFilter
   type: StringFilter
@@ -506,29 +520,29 @@ type CalamityAttributeWhere {
   and: CalamityAttributeWhere
 }
 
-type CalamityPictureFilter {
+input CalamityPictureFilter {
   search: String
   where: CalamityPictureWhere
 }
 
-type CalamityPictureWhere {
+input CalamityPictureWhere {
   id: IDFilter
   name: StringFilter
   url: StringFilter
   calamityId: IDFilter
   deletedAt: IntFilter
-  createdAt: IntFilter
   updatedAt: IntFilter
+  createdAt: IntFilter
   or: CalamityPictureWhere
   and: CalamityPictureWhere
 }
 
-type CalamityTagFilter {
+input CalamityTagFilter {
   search: String
   where: CalamityTagWhere
 }
 
-type CalamityTagWhere {
+input CalamityTagWhere {
   id: IDFilter
   calamityId: IDFilter
   tagId: IDFilter
@@ -538,12 +552,12 @@ type CalamityTagWhere {
   and: CalamityTagWhere
 }
 
-type CalamityTypeFilter {
+input CalamityTypeFilter {
   search: String
   where: CalamityTypeWhere
 }
 
-type CalamityTypeWhere {
+input CalamityTypeWhere {
   id: IDFilter
   name: StringFilter
   order: IntFilter
@@ -554,19 +568,19 @@ type CalamityTypeWhere {
   defaultM2: FloatFilter
   userOrganization: UserOrganizationWhere
   calamities: CalamityWhere
+  deletedAt: IntFilter
   updatedAt: IntFilter
   createdAt: IntFilter
-  deletedAt: IntFilter
   or: CalamityTypeWhere
   and: CalamityTypeWhere
 }
 
-type CompanyFilter {
+input CompanyFilter {
   search: String
   where: CompanyWhere
 }
 
-type CompanyWhere {
+input CompanyWhere {
   id: IDFilter
   name: StringFilter
   backgroundColor: StringFilter
@@ -584,30 +598,30 @@ type CompanyWhere {
   and: CompanyWhere
 }
 
-type CompanyUserFilter {
+input CompanyUserFilter {
   search: String
   where: CompanyUserWhere
 }
 
-type CompanyUserWhere {
+input CompanyUserWhere {
   id: IDFilter
   userId: IDFilter
   companyId: IDFilter
   company: CompanyWhere
   user: UserWhere
-  deletedAt: IntFilter
   updatedAt: IntFilter
   createdAt: IntFilter
+  deletedAt: IntFilter
   or: CompanyUserWhere
   and: CompanyUserWhere
 }
 
-type FailedJobFilter {
+input FailedJobFilter {
   search: String
   where: FailedJobWhere
 }
 
-type FailedJobWhere {
+input FailedJobWhere {
   id: IDFilter
   connection: StringFilter
   queue: StringFilter
@@ -618,12 +632,12 @@ type FailedJobWhere {
   and: FailedJobWhere
 }
 
-type HouseTypeFilter {
+input HouseTypeFilter {
   search: String
   where: HouseTypeWhere
 }
 
-type HouseTypeWhere {
+input HouseTypeWhere {
   id: IDFilter
   name: StringFilter
   order: IntFilter
@@ -633,19 +647,19 @@ type HouseTypeWhere {
   userOrganization: UserOrganizationWhere
   addresses: AddressWhere
   calamities: CalamityWhere
-  deletedAt: IntFilter
   updatedAt: IntFilter
+  deletedAt: IntFilter
   createdAt: IntFilter
   or: HouseTypeWhere
   and: HouseTypeWhere
 }
 
-type MigrationFilter {
+input MigrationFilter {
   search: String
   where: MigrationWhere
 }
 
-type MigrationWhere {
+input MigrationWhere {
   id: IDFilter
   migration: StringFilter
   batch: IntFilter
@@ -653,12 +667,12 @@ type MigrationWhere {
   and: MigrationWhere
 }
 
-type PersonFilter {
+input PersonFilter {
   search: String
   where: PersonWhere
 }
 
-type PersonWhere {
+input PersonWhere {
   id: IDFilter
   firstName: StringFilter
   lastName: StringFilter
@@ -674,37 +688,37 @@ type PersonWhere {
   userOrganization: UserOrganizationWhere
   contactPersonAddresses: AddressWhere
   ownerAddresses: AddressWhere
-  deletedAt: IntFilter
   createdAt: IntFilter
+  deletedAt: IntFilter
   updatedAt: IntFilter
   or: PersonWhere
   and: PersonWhere
 }
 
-type RoleFilter {
+input RoleFilter {
   search: String
   where: RoleWhere
 }
 
-type RoleWhere {
+input RoleWhere {
   id: IDFilter
   name: StringFilter
   icon: StringFilter
   description: StringFilter
   users: UserWhere
+  createdAt: IntFilter
   updatedAt: IntFilter
   deletedAt: IntFilter
-  createdAt: IntFilter
   or: RoleWhere
   and: RoleWhere
 }
 
-type StatusFilter {
+input StatusFilter {
   search: String
   where: StatusWhere
 }
 
-type StatusWhere {
+input StatusWhere {
   id: IDFilter
   order: IntFilter
   name: StringFilter
@@ -712,38 +726,38 @@ type StatusWhere {
   color: StringFilter
   iconThumb: StringFilter
   calamities: CalamityWhere
-  updatedAt: IntFilter
-  createdAt: IntFilter
   deletedAt: IntFilter
+  createdAt: IntFilter
+  updatedAt: IntFilter
   or: StatusWhere
   and: StatusWhere
 }
 
-type TagFilter {
+input TagFilter {
   search: String
   where: TagWhere
 }
 
-type TagWhere {
+input TagWhere {
   id: IDFilter
   name: StringFilter
   image: StringFilter
   userOrganizationId: IDFilter
   userOrganization: UserOrganizationWhere
   calamityTags: CalamityTagWhere
-  createdAt: IntFilter
   updatedAt: IntFilter
+  createdAt: IntFilter
   deletedAt: IntFilter
   or: TagWhere
   and: TagWhere
 }
 
-type UserFilter {
+input UserFilter {
   search: String
   where: UserWhere
 }
 
-type UserWhere {
+input UserWhere {
   id: IDFilter
   name: StringFilter
   lastName: StringFilter
@@ -756,19 +770,19 @@ type UserWhere {
   calamities: CalamityWhere
   companyUsers: CompanyUserWhere
   userUserOrganizations: UserUserOrganizationWhere
-  createdAt: IntFilter
   deletedAt: IntFilter
+  createdAt: IntFilter
   updatedAt: IntFilter
   or: UserWhere
   and: UserWhere
 }
 
-type UserOrganizationFilter {
+input UserOrganizationFilter {
   search: String
   where: UserOrganizationWhere
 }
 
-type UserOrganizationWhere {
+input UserOrganizationWhere {
   id: IDFilter
   name: StringFilter
   logo: StringFilter
@@ -795,19 +809,19 @@ type UserOrganizationWhere {
   people: PersonWhere
   tags: TagWhere
   userUserOrganizations: UserUserOrganizationWhere
-  createdAt: IntFilter
-  updatedAt: IntFilter
   deletedAt: IntFilter
+  updatedAt: IntFilter
+  createdAt: IntFilter
   or: UserOrganizationWhere
   and: UserOrganizationWhere
 }
 
-type UserUserOrganizationFilter {
+input UserUserOrganizationFilter {
   search: String
   where: UserUserOrganizationWhere
 }
 
-type UserUserOrganizationWhere {
+input UserUserOrganizationWhere {
   id: IDFilter
   userOrganizationId: IDFilter
   userId: IDFilter
@@ -877,9 +891,13 @@ input AddressInput {
   name: String
   permission: Boolean
   addressStatusId: ID!
-  createdAt: Int
   deletedAt: Int
   updatedAt: Int
+  createdAt: Int
+}
+
+input AddressesInput {
+  addresses: [AddressInput!]!
 }
 
 type AddressPayload {
@@ -888,6 +906,10 @@ type AddressPayload {
 
 type AddressDeletePayload {
   id: ID!
+}
+
+type AddressesPayload {
+  addresses: [Address!]!
 }
 
 type AddressesDeletePayload {
@@ -905,9 +927,13 @@ input AddressStatusInput {
   description: String
   order: Int!
   color: String!
+  deletedAt: Int
   createdAt: Int
   updatedAt: Int
-  deletedAt: Int
+}
+
+input AddressStatusesInput {
+  addressStatuses: [AddressStatusInput!]!
 }
 
 type AddressStatusPayload {
@@ -916,6 +942,10 @@ type AddressStatusPayload {
 
 type AddressStatusDeletePayload {
   id: ID!
+}
+
+type AddressStatusesPayload {
+  addressStatuses: [AddressStatus!]!
 }
 
 type AddressStatusesDeletePayload {
@@ -956,8 +986,12 @@ input CalamityInput {
   m2: Float
   amount: Int
   createdAt: Int
-  updatedAt: Int
   deletedAt: Int
+  updatedAt: Int
+}
+
+input CalamitiesInput {
+  calamities: [CalamityInput!]!
 }
 
 type CalamityPayload {
@@ -966,6 +1000,10 @@ type CalamityPayload {
 
 type CalamityDeletePayload {
   id: ID!
+}
+
+type CalamitiesPayload {
+  calamities: [Calamity!]!
 }
 
 type CalamitiesDeletePayload {
@@ -987,12 +1025,20 @@ input CalamityAttributeInput {
   updatedAt: Int
 }
 
+input CalamityAttributesInput {
+  calamityAttributes: [CalamityAttributeInput!]!
+}
+
 type CalamityAttributePayload {
   calamityAttribute: CalamityAttribute!
 }
 
 type CalamityAttributeDeletePayload {
   id: ID!
+}
+
+type CalamityAttributesPayload {
+  calamityAttributes: [CalamityAttribute!]!
 }
 
 type CalamityAttributesDeletePayload {
@@ -1009,8 +1055,12 @@ input CalamityPictureInput {
   url: String!
   calamityId: ID!
   deletedAt: Int
-  createdAt: Int
   updatedAt: Int
+  createdAt: Int
+}
+
+input CalamityPicturesInput {
+  calamityPictures: [CalamityPictureInput!]!
 }
 
 type CalamityPicturePayload {
@@ -1019,6 +1069,10 @@ type CalamityPicturePayload {
 
 type CalamityPictureDeletePayload {
   id: ID!
+}
+
+type CalamityPicturesPayload {
+  calamityPictures: [CalamityPicture!]!
 }
 
 type CalamityPicturesDeletePayload {
@@ -1035,12 +1089,20 @@ input CalamityTagInput {
   tagId: ID!
 }
 
+input CalamityTagsInput {
+  calamityTags: [CalamityTagInput!]!
+}
+
 type CalamityTagPayload {
   calamityTag: CalamityTag!
 }
 
 type CalamityTagDeletePayload {
   id: ID!
+}
+
+type CalamityTagsPayload {
+  calamityTags: [CalamityTag!]!
 }
 
 type CalamityTagsDeletePayload {
@@ -1060,9 +1122,13 @@ input CalamityTypeInput {
   batchCreate: Boolean
   description: String
   defaultM2: Float!
+  deletedAt: Int
   updatedAt: Int
   createdAt: Int
-  deletedAt: Int
+}
+
+input CalamityTypesInput {
+  calamityTypes: [CalamityTypeInput!]!
 }
 
 type CalamityTypePayload {
@@ -1071,6 +1137,10 @@ type CalamityTypePayload {
 
 type CalamityTypeDeletePayload {
   id: ID!
+}
+
+type CalamityTypesPayload {
+  calamityTypes: [CalamityType!]!
 }
 
 type CalamityTypesDeletePayload {
@@ -1093,12 +1163,20 @@ input CompanyInput {
   deletedAt: Int
 }
 
+input CompaniesInput {
+  companies: [CompanyInput!]!
+}
+
 type CompanyPayload {
   company: Company!
 }
 
 type CompanyDeletePayload {
   id: ID!
+}
+
+type CompaniesPayload {
+  companies: [Company!]!
 }
 
 type CompaniesDeletePayload {
@@ -1113,9 +1191,13 @@ input CompanyUserInput {
   id: ID!
   userId: ID!
   companyId: ID!
-  deletedAt: Int
   updatedAt: Int
   createdAt: Int
+  deletedAt: Int
+}
+
+input CompanyUsersInput {
+  companyUsers: [CompanyUserInput!]!
 }
 
 type CompanyUserPayload {
@@ -1124,6 +1206,10 @@ type CompanyUserPayload {
 
 type CompanyUserDeletePayload {
   id: ID!
+}
+
+type CompanyUsersPayload {
+  companyUsers: [CompanyUser!]!
 }
 
 type CompanyUsersDeletePayload {
@@ -1143,12 +1229,20 @@ input FailedJobInput {
   failedAt: Int!
 }
 
+input FailedJobsInput {
+  failedJobs: [FailedJobInput!]!
+}
+
 type FailedJobPayload {
   failedJob: FailedJob!
 }
 
 type FailedJobDeletePayload {
   id: ID!
+}
+
+type FailedJobsPayload {
+  failedJobs: [FailedJob!]!
 }
 
 type FailedJobsDeletePayload {
@@ -1166,9 +1260,13 @@ input HouseTypeInput {
   image: String
   userOrganizationId: ID!
   description: String
-  deletedAt: Int
   updatedAt: Int
+  deletedAt: Int
   createdAt: Int
+}
+
+input HouseTypesInput {
+  houseTypes: [HouseTypeInput!]!
 }
 
 type HouseTypePayload {
@@ -1177,6 +1275,10 @@ type HouseTypePayload {
 
 type HouseTypeDeletePayload {
   id: ID!
+}
+
+type HouseTypesPayload {
+  houseTypes: [HouseType!]!
 }
 
 type HouseTypesDeletePayload {
@@ -1193,12 +1295,20 @@ input MigrationInput {
   batch: Int!
 }
 
+input MigrationsInput {
+  migrations: [MigrationInput!]!
+}
+
 type MigrationPayload {
   migration: Migration!
 }
 
 type MigrationDeletePayload {
   id: ID!
+}
+
+type MigrationsPayload {
+  migrations: [Migration!]!
 }
 
 type MigrationsDeletePayload {
@@ -1221,9 +1331,13 @@ input PersonInput {
   userOrganizationId: ID!
   name: String
   companyName: String
-  deletedAt: Int
   createdAt: Int
+  deletedAt: Int
   updatedAt: Int
+}
+
+input PeopleInput {
+  people: [PersonInput!]!
 }
 
 type PersonPayload {
@@ -1232,6 +1346,10 @@ type PersonPayload {
 
 type PersonDeletePayload {
   id: ID!
+}
+
+type PeoplePayload {
+  people: [Person!]!
 }
 
 type PeopleDeletePayload {
@@ -1247,9 +1365,13 @@ input RoleInput {
   name: String!
   icon: String
   description: String
+  createdAt: Int
   updatedAt: Int
   deletedAt: Int
-  createdAt: Int
+}
+
+input RolesInput {
+  roles: [RoleInput!]!
 }
 
 type RolePayload {
@@ -1258,6 +1380,10 @@ type RolePayload {
 
 type RoleDeletePayload {
   id: ID!
+}
+
+type RolesPayload {
+  roles: [Role!]!
 }
 
 type RolesDeletePayload {
@@ -1275,9 +1401,13 @@ input StatusInput {
   icon: String
   color: String
   iconThumb: String
-  updatedAt: Int
-  createdAt: Int
   deletedAt: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+input StatusesInput {
+  statuses: [StatusInput!]!
 }
 
 type StatusPayload {
@@ -1286,6 +1416,10 @@ type StatusPayload {
 
 type StatusDeletePayload {
   id: ID!
+}
+
+type StatusesPayload {
+  statuses: [Status!]!
 }
 
 type StatusesDeletePayload {
@@ -1301,9 +1435,13 @@ input TagInput {
   name: String!
   image: String
   userOrganizationId: ID!
-  createdAt: Int
   updatedAt: Int
+  createdAt: Int
   deletedAt: Int
+}
+
+input TagsInput {
+  tags: [TagInput!]!
 }
 
 type TagPayload {
@@ -1312,6 +1450,10 @@ type TagPayload {
 
 type TagDeletePayload {
   id: ID!
+}
+
+type TagsPayload {
+  tags: [Tag!]!
 }
 
 type TagsDeletePayload {
@@ -1331,9 +1473,13 @@ input UserInput {
   rememberToken: String
   roleId: ID!
   sendNotificationsOnNewCalamity: Boolean!
-  createdAt: Int
   deletedAt: Int
+  createdAt: Int
   updatedAt: Int
+}
+
+input UsersInput {
+  users: [UserInput!]!
 }
 
 type UserPayload {
@@ -1342,6 +1488,10 @@ type UserPayload {
 
 type UserDeletePayload {
   id: ID!
+}
+
+type UsersPayload {
+  users: [User!]!
 }
 
 type UsersDeletePayload {
@@ -1371,9 +1521,13 @@ input UserOrganizationInput {
   newCalamityCompanyScreen: Boolean!
   newCalamityPriorityScreen: Boolean!
   newCalamityM2Screen: Boolean!
-  createdAt: Int
-  updatedAt: Int
   deletedAt: Int
+  updatedAt: Int
+  createdAt: Int
+}
+
+input UserOrganizationsInput {
+  userOrganizations: [UserOrganizationInput!]!
 }
 
 type UserOrganizationPayload {
@@ -1382,6 +1536,10 @@ type UserOrganizationPayload {
 
 type UserOrganizationDeletePayload {
   id: ID!
+}
+
+type UserOrganizationsPayload {
+  userOrganizations: [UserOrganization!]!
 }
 
 type UserOrganizationsDeletePayload {
@@ -1398,12 +1556,20 @@ input UserUserOrganizationInput {
   userId: ID!
 }
 
+input UserUserOrganizationsInput {
+  userUserOrganizations: [UserUserOrganizationInput!]!
+}
+
 type UserUserOrganizationPayload {
   userUserOrganization: UserUserOrganization!
 }
 
 type UserUserOrganizationDeletePayload {
   id: ID!
+}
+
+type UserUserOrganizationsPayload {
+  userUserOrganizations: [UserUserOrganization!]!
 }
 
 type UserUserOrganizationsDeletePayload {
@@ -1605,7 +1771,6 @@ type Mutation {
     filter: UserUserOrganizationFilter
   ): UserUserOrganizationsDeletePayload!
 }
-
 ```
 
 ## Filtering lists (WIP)
