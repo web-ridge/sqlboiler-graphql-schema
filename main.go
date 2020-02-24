@@ -393,6 +393,10 @@ func getSchema(
 			schema.WriteString("input " + model.Name + "Input {")
 			schema.WriteString("\n")
 			for _, field := range model.Fields {
+				// id is not required in create and will be specified in update resolver
+				if field.Name == "id" {
+					continue
+				}
 				// not possible yet in input
 				if field.IsRelation {
 					continue
