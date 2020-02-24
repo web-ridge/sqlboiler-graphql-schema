@@ -508,7 +508,7 @@ func getSchema(
 			// update single
 			// e.g updateUser(id: ID!, input: UserInput!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("update" + model.Name + "(input: " + model.Name + "Input!)")
+			schema.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "Input!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "Payload!")
 			schema.WriteString("\n")
