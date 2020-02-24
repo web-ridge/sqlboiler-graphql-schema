@@ -611,6 +611,21 @@ func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 	models := make([]*Model, len(modelNames))
 	for i, modelName := range modelNames {
 		fields := fieldsPerModelName[modelName]
+
+		// check if required based on foreign keys
+		for _, f := range fields {
+			if f.IsRelation {
+				f.IsRequired = foreignKeyIsRequired(f, fields)
+				f.FullType = getFullType(f.Type, f.IsArray, f.IsRequired)
+			}
+		}
+		// for _, f := range fields {
+		// 	if f.IsRelation {
+		// 		fmt.Println("Is", modelName, f.BoilerName, "required?")
+		// 		fmt.Println(f.IsRequired)
+		// 	}
+		// }
+
 		models[i] = &Model{
 			Name:   modelName,
 			Fields: fields,
@@ -661,6 +676,15 @@ func getSortedBoilerTypes(modelDirectory string) (sortedBoilerTypes []*BoilerTyp
 	return
 }
 
+func foreignKeyIsRequired(relation *Field, foreignKeys []*Field) bool {
+	findKey := relation.BoilerName + "ID"
+	for _, foreignKey := range foreignKeys {
+		if foreignKey.BoilerName == findKey {
+			return isRequired(foreignKey.BoilerType)
+		}
+	}
+	return false
+}
 func relationExist(field *Field, fields []*Field) bool {
 	// e.g we have foreign key from user to organization
 	// organizationID is clutter in your scheme
