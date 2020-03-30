@@ -11,7 +11,7 @@ import (
 
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
-	"github.com/micro/cli"
+	"github.com/urfave/cli/v2"
 	"github.com/web-ridge/gqlgen-sqlboiler/boiler"
 )
 
@@ -32,6 +32,8 @@ func main() {
 	var batchUpdate bool
 	var batchCreate bool
 	var batchDelete bool
+	var skipInputFields cli.StringSlice
+
 	app := &cli.App{
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -46,31 +48,40 @@ func main() {
 				Usage:       "filepath for schema",
 				Destination: &outputFile,
 			},
-			&cli.BoolTFlag{
+			&cli.StringSliceFlag{
+				Name:        "skip-input-fields",
+				Usage:       "Comma seperated list of input keys which should be skipped: e.g. userId, organizationId",
+				Destination: &skipInputFields,
+			},
+			&cli.BoolFlag{
 				Name:        "mutations",
 				Usage:       "generate mutations for models",
+				Value:       true,
 				Destination: &mutations,
 			},
-			&cli.BoolTFlag{
+			&cli.BoolFlag{
 				Name:        "batch-update",
 				Usage:       "generate batch update for models",
+				Value:       true,
 				Destination: &batchUpdate,
 			},
-			&cli.BoolTFlag{
+			&cli.BoolFlag{
 				Name:        "batch-create",
 				Usage:       "generate batch create for models",
+				Value:       true,
 				Destination: &batchCreate,
 			},
-			&cli.BoolTFlag{
+			&cli.BoolFlag{
 				Name:        "batch-delete",
 				Usage:       "generate batch delete for models",
+				Value:       true,
 				Destination: &batchDelete,
 			},
 		},
 		Action: func(c *cli.Context) error {
 
 			// Generate schema based on config
-			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete)
+			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete, skipInputFields.Value())
 
 			// TODO: Write schema to the configured location
 			if fileExists(outputFile) {
@@ -249,14 +260,15 @@ type Model struct {
 	// Implements *string
 }
 type Field struct {
-	Name       string
-	Type       string // String, ID, Integer
-	FullType   string // e.g String! or if array [String!]
-	BoilerName string
-	BoilerType string
-	IsRequired bool
-	IsArray    bool
-	IsRelation bool
+	Name             string
+	Type             string // String, ID, Integer
+	FullType         string // e.g String! or if array [String!]
+	FullTypeOptional string // e.g. String or if array [String]
+	BoilerName       string
+	BoilerType       string
+	IsRequired       bool
+	IsArray          bool
+	IsRelation       bool
 }
 
 type BoilerType struct {
@@ -270,6 +282,7 @@ func getSchema(
 	batchUpdate bool,
 	batchCreate bool,
 	batchDelete bool,
+	skipInputFields []string,
 ) string {
 	var schema strings.Builder
 
@@ -309,6 +322,8 @@ func getSchema(
 	// generate filter structs per model
 	for _, model := range models {
 
+		// Ignore some specified input fields
+
 		// Generate a type safe grapql filter
 
 		// Generate the base filter
@@ -336,6 +351,7 @@ func getSchema(
 		schema.WriteString("input " + model.Name + "Where {")
 		schema.WriteString("\n")
 		for _, field := range model.Fields {
+
 			if field.IsRelation {
 				// Support filtering in relationships (atleast schema wise)
 				schema.WriteString(indent + field.Name + ": " + field.Type + "Where")
@@ -383,16 +399,17 @@ func getSchema(
 	// Generate input and payloads for mutatations
 	if mutations {
 		for _, model := range models {
+			filteredFields := fieldsWithout(model.Fields, skipInputFields)
 
 			modelArray := pluralizer.Plural(model.Name)
-			// input UserInput {
+			// input UserCreateInput {
 			// 	firstName: String!
 			// 	lastName: String
 			//	organizationId: ID!
 			// }
-			schema.WriteString("input " + model.Name + "Input {")
+			schema.WriteString("input " + model.Name + "CreateInput {")
 			schema.WriteString("\n")
-			for _, field := range model.Fields {
+			for _, field := range filteredFields {
 				// id is not required in create and will be specified in update resolver
 				if field.Name == "id" {
 					continue
@@ -408,10 +425,34 @@ func getSchema(
 			schema.WriteString("\n")
 			schema.WriteString("\n")
 
-			if batchCreate {
-				schema.WriteString("input " + modelArray + "Input {")
+			// input UserUpdateInput {
+			// 	firstName: String!
+			// 	lastName: String
+			//	organizationId: ID!
+			// }
+			schema.WriteString("input " + model.Name + "UpdateInput {")
+			schema.WriteString("\n")
+			for _, field := range filteredFields {
+				// id is not required in create and will be specified in update resolver
+				if field.Name == "id" {
+					continue
+				}
+				// not possible yet in input
+				// TODO: make this possible for one-to-one structs?
+				if field.IsRelation {
+					continue
+				}
+				schema.WriteString(indent + field.Name + ": " + field.FullTypeOptional)
 				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "Input!]!")
+			}
+			schema.WriteString("}")
+			schema.WriteString("\n")
+			schema.WriteString("\n")
+
+			if batchCreate {
+				schema.WriteString("input " + modelArray + "UpdateInput {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "UpdateInput!]!")
 				schema.WriteString("}")
 				schema.WriteString("\n")
 				schema.WriteString("\n")
@@ -480,11 +521,8 @@ func getSchema(
 			}
 
 		}
-	}
 
-	// Generate mutation queries
-
-	if mutations {
+		// Generate mutation queries
 		schema.WriteString("type Mutation {")
 		schema.WriteString("\n")
 		for _, model := range models {
@@ -621,6 +659,7 @@ func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
 			if f.IsRelation {
 				f.IsRequired = foreignKeyIsRequired(f, fields)
 				f.FullType = getFullType(f.Type, f.IsArray, f.IsRequired)
+				f.FullTypeOptional = getFullType(f.Type, f.IsArray, false)
 			}
 		}
 		// for _, f := range fields {
@@ -751,13 +790,14 @@ func toField(boilerName, boilerType string) *Field {
 	array := isArray(boilerType)
 	required := isRequired(boilerType)
 	return &Field{
-		Name:       toGraphQLName(boilerName, boilerType),
-		Type:       t,
-		FullType:   getFullType(t, array, required),
-		BoilerName: boilerName,
-		BoilerType: boilerType,
-		IsRequired: required,
-		IsArray:    array,
+		Name:             toGraphQLName(boilerName, boilerType),
+		Type:             t,
+		FullType:         getFullType(t, array, required),
+		FullTypeOptional: getFullType(t, array, false),
+		BoilerName:       boilerName,
+		BoilerType:       boilerType,
+		IsRequired:       required,
+		IsArray:          array,
 	}
 }
 
@@ -819,11 +859,26 @@ func isFirstCharacterLowerCase(s string) bool {
 	return false
 }
 
-func appendIfMissing(slice []string, i string) []string {
-	for _, ele := range slice {
-		if ele == i {
-			return slice
+func appendIfMissing(slice []string, v string) []string {
+	if sliceContains(slice, v) {
+		return slice
+	}
+	return append(slice, v)
+}
+func fieldsWithout(fields []*Field, skipFieldNames []string) []*Field {
+	filteredFields := []*Field{}
+	for _, field := range fields {
+		if !sliceContains(skipFieldNames, field.Name) {
+			filteredFields = append(filteredFields, field)
 		}
 	}
-	return append(slice, i)
+	return filteredFields
+}
+func sliceContains(slice []string, v string) bool {
+	for _, s := range slice {
+		if s == v {
+			return true
+		}
+	}
+	return false
 }
