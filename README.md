@@ -21,21 +21,24 @@ You can edit your schema like you want later and re-generate if your database ch
 ## Options
 
 ```
+NAME:
+   sqlboiler-graphql-schema
+
 USAGE:
-    [global options] command [command options] [arguments...]
+   sqlboiler-graphql-schema [global options] command [command options] [arguments...]
 
 COMMANDS:
-     help, h  Shows a list of commands or help for one command
+   help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --input value   directory where the sqlboiler models are (default: "models")
-   --output value  filepath for schema (default: "schema.graphql")
-   --mutations     generate mutations for models
-   --batch-update  generate batch update for models
-   --batch-create  generate batch create for models
-   --batch-delete  generate batch delete for models
-   --help, -h      show help
-   --version, -v   print the version
+   --input value              directory where the sqlboiler models are (default: "models")
+   --output value             filepath for schema (default: "schema.graphql")
+   --skip-input-fields value  Comma seperated list of input keys which should be skipped: e.g. userId, organizationId
+   --mutations                generate mutations for models (default: true)
+   --batch-update             generate batch update for models (default: true)
+   --batch-create             generate batch create for models (default: true)
+   --batch-delete             generate batch delete for models (default: true)
+   --help, -h                 show help (default: false)
 ```
 
 - Models
