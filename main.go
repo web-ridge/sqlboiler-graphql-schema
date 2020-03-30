@@ -450,6 +450,15 @@ func getSchema(
 			schema.WriteString("\n")
 
 			if batchCreate {
+				schema.WriteString("input " + modelArray + "CreateInput {")
+				schema.WriteString("\n")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "CreateInput!]!")
+				schema.WriteString("}")
+				schema.WriteString("\n")
+				schema.WriteString("\n")
+			}
+
+			if batchUpdate {
 				schema.WriteString("input " + modelArray + "UpdateInput {")
 				schema.WriteString("\n")
 				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "UpdateInput!]!")
@@ -532,7 +541,7 @@ func getSchema(
 			// create single
 			// e.g createUser(input: UserInput!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("create" + model.Name + "(input: " + model.Name + "Input!)")
+			schema.WriteString("create" + model.Name + "(input: " + model.Name + "CreateInput!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "Payload!")
 			schema.WriteString("\n")
@@ -541,7 +550,7 @@ func getSchema(
 			// e.g createUsers(input: [UsersInput!]!): UsersPayload!
 			if batchCreate {
 				schema.WriteString(indent)
-				schema.WriteString("create" + modelArray + "(input: " + modelArray + "Input!)")
+				schema.WriteString("create" + modelArray + "(input: " + modelArray + "CreateInput!)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "Payload!")
 				schema.WriteString("\n")
@@ -550,7 +559,7 @@ func getSchema(
 			// update single
 			// e.g updateUser(id: ID!, input: UserInput!): UserPayload!
 			schema.WriteString(indent)
-			schema.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "Input!)")
+			schema.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "UpdateInput!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "Payload!")
 			schema.WriteString("\n")
@@ -559,7 +568,7 @@ func getSchema(
 			// e.g updateUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
 			if batchUpdate {
 				schema.WriteString(indent)
-				schema.WriteString("update" + modelArray + "(filter: " + model.Name + "Filter, input: " + modelArray + "Input!)")
+				schema.WriteString("update" + modelArray + "(filter: " + model.Name + "Filter, input: " + modelArray + "UpdateInput!)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "UpdatePayload!")
 				schema.WriteString("\n")
