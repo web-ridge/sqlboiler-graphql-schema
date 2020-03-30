@@ -50,7 +50,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:        "skip-input-fields",
-				Usage:       "Comma seperated list of input keys which should be skipped: e.g. userId, organizationId",
+				Usage:       "input names which should be skipped: e.g. userId organizationId",
 				Destination: &skipInputFields,
 			},
 			&cli.BoolFlag{
