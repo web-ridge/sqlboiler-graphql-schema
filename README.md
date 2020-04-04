@@ -33,7 +33,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --input value              directory where the sqlboiler models are (default: "models")
    --output value             filepath for schema (default: "schema.graphql")
-   --skip-input-fields value  input names which should be skipped: e.g. userId organizationId
+   --skip-input-fields value  input names which should be skipped: e.g. userId,organizationId
    --mutations                generate mutations for models (default: true)
    --batch-update             generate batch update for models (default: true)
    --batch-create             generate batch create for models (default: true)

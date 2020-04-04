@@ -32,6 +32,7 @@ func main() {
 	var batchCreate bool
 	var batchDelete bool
 	var skipInputFields cli.StringSlice
+	var directives cli.StringSlice
 
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -51,6 +52,11 @@ func main() {
 				Name:        "skip-input-fields",
 				Usage:       "input names which should be skipped: e.g. userId organizationId",
 				Destination: &skipInputFields,
+			},
+			&cli.StringSliceFlag{
+				Name:        "directives",
+				Usage:       "directives which should be added after resolvers e.g. isAuthenticated",
+				Destination: &directives,
 			},
 			&cli.BoolFlag{
 				Name:        "mutations",
@@ -80,7 +86,15 @@ func main() {
 		Action: func(c *cli.Context) error {
 
 			// Generate schema based on config
-			schema := getSchema(modelDirectory, mutations, batchUpdate, batchCreate, batchDelete, skipInputFields.Value())
+			schema := getSchema(
+				modelDirectory,
+				mutations,
+				batchUpdate,
+				batchCreate,
+				batchDelete,
+				skipInputFields.Value(),
+				directives.Value(),
+			)
 
 			// TODO: Write schema to the configured location
 			if fileExists(outputFile) {
@@ -269,11 +283,6 @@ type Field struct {
 	BoilerField      *boiler.BoilerField
 }
 
-type BoilerType struct {
-	Name string
-	Type string
-}
-
 func getSchema(
 	modelDirectory string,
 	mutations bool,
@@ -281,6 +290,7 @@ func getSchema(
 	batchCreate bool,
 	batchDelete bool,
 	skipInputFields []string,
+	directivesSlice []string,
 ) string {
 	var schema strings.Builder
 
@@ -288,6 +298,15 @@ func getSchema(
 	boilerModels := boiler.GetBoilerModels(modelDirectory)
 	models := boilerModelsToModels(boilerModels)
 
+	fullDirectives := []string{}
+	for _, defaultDirective := range directivesSlice {
+		fullDirectives = append(fullDirectives, "@"+defaultDirective)
+		schema.WriteString(fmt.Sprintf("directive @%v on FIELD_DEFINITION", defaultDirective))
+		schema.WriteString("\n")
+	}
+	schema.WriteString("\n")
+
+	joinedDirectives := strings.Join(fullDirectives, " ")
 	// Create basic structs e.g.
 	// type User {
 	// 	firstName: String!
@@ -381,6 +400,7 @@ func getSchema(
 		schema.WriteString(strcase.ToLowerCamel(model.Name) + "(id: ID!)")
 		schema.WriteString(": ")
 		schema.WriteString(model.Name + "!")
+		schema.WriteString(joinedDirectives)
 		schema.WriteString("\n")
 
 		// lists
@@ -390,6 +410,7 @@ func getSchema(
 		schema.WriteString(strcase.ToLowerCamel(modelArray) + "(filter: " + model.Name + "Filter)")
 		schema.WriteString(": ")
 		schema.WriteString("[" + model.Name + "!]!")
+		schema.WriteString(joinedDirectives)
 		schema.WriteString("\n")
 
 	}
@@ -545,6 +566,7 @@ func getSchema(
 			schema.WriteString("create" + model.Name + "(input: " + model.Name + "CreateInput!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "Payload!")
+			schema.WriteString(joinedDirectives)
 			schema.WriteString("\n")
 
 			// create multiple
@@ -554,6 +576,7 @@ func getSchema(
 				schema.WriteString("create" + modelArray + "(input: " + modelArray + "CreateInput!)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "Payload!")
+				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
 
@@ -563,6 +586,7 @@ func getSchema(
 			schema.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "UpdateInput!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "Payload!")
+			schema.WriteString(joinedDirectives)
 			schema.WriteString("\n")
 
 			// update multiple (batch update)
@@ -572,6 +596,7 @@ func getSchema(
 				schema.WriteString("update" + modelArray + "(filter: " + model.Name + "Filter, input: " + modelArray + "UpdateInput!)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "UpdatePayload!")
+				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
 
@@ -581,6 +606,7 @@ func getSchema(
 			schema.WriteString("delete" + model.Name + "(id: ID!)")
 			schema.WriteString(": ")
 			schema.WriteString(model.Name + "DeletePayload!")
+			schema.WriteString(joinedDirectives)
 			schema.WriteString("\n")
 
 			// delete multiple
@@ -590,6 +616,7 @@ func getSchema(
 				schema.WriteString("delete" + modelArray + "(filter: " + model.Name + "Filter)")
 				schema.WriteString(": ")
 				schema.WriteString(modelArray + "DeletePayload!")
+				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
 
@@ -647,7 +674,7 @@ func boilerFieldToField(boilerField *boiler.BoilerField) *Field {
 
 	t := toGraphQLType(boilerField.Name, boilerField.Type)
 	return &Field{
-		Name:             toGraphQLName(boilerField.Name, boilerField.Type),
+		Name:             toGraphQLName(boilerField.Name),
 		RelationName:     relationName,
 		RelationType:     relationType,
 		Type:             t,
@@ -658,7 +685,7 @@ func boilerFieldToField(boilerField *boiler.BoilerField) *Field {
 	}
 }
 
-func toGraphQLName(fieldName, boilerType string) string {
+func toGraphQLName(fieldName string) string {
 	graphqlName := fieldName
 
 	// Golang ID to Id the right way
@@ -707,20 +734,6 @@ func toGraphQLType(fieldName, boilerType string) string {
 	boilerType = strings.TrimSuffix(boilerType, "Slice")
 
 	return boilerType
-}
-
-func isFirstCharacterLowerCase(s string) bool {
-	if len(s) > 0 && s[0] == strings.ToLower(s)[0] {
-		return true
-	}
-	return false
-}
-
-func appendIfMissing(slice []string, v string) []string {
-	if sliceContains(slice, v) {
-		return slice
-	}
-	return append(slice, v)
 }
 
 func fieldsWithout(fields []*Field, skipFieldNames []string) []*Field {
