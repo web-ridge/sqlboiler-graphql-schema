@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"sort"
 	"strings"
 
 	pluralize "github.com/gertd/go-pluralize"
@@ -261,14 +260,13 @@ type Model struct {
 }
 type Field struct {
 	Name             string
+	RelationName     string // posts
+	RelationType     string // Page, User, Post
 	Type             string // String, ID, Integer
 	FullType         string // e.g String! or if array [String!]
+	RelationFullType string // [Posts!]
 	FullTypeOptional string // e.g. String or if array [String]
-	BoilerName       string
-	BoilerType       string
-	IsRequired       bool
-	IsArray          bool
-	IsRelation       bool
+	BoilerField      *boiler.BoilerField
 }
 
 type BoilerType struct {
@@ -287,7 +285,8 @@ func getSchema(
 	var schema strings.Builder
 
 	// Parse models and their fields based on the sqlboiler model directory
-	models := parseModelsAndFieldsFromBoiler(getSortedBoilerTypes(modelDirectory))
+	boilerModels := boiler.GetBoilerModels(modelDirectory)
+	models := boilerModelsToModels(boilerModels)
 
 	// Create basic structs e.g.
 	// type User {
@@ -304,7 +303,10 @@ func getSchema(
 			// e.g we have foreign key from user to organization
 			// organizationID is clutter in your scheme
 			// you only want Organization and OrganizationID should be skipped
-			if !relationExist(field, model.Fields) {
+			if field.BoilerField.IsRelation {
+				schema.WriteString(indent + field.RelationName + ": " + field.RelationFullType)
+				schema.WriteString("\n")
+			} else {
 				schema.WriteString(indent + field.Name + ": " + field.FullType)
 				schema.WriteString("\n")
 			}
@@ -351,10 +353,9 @@ func getSchema(
 		schema.WriteString("input " + model.Name + "Where {")
 		schema.WriteString("\n")
 		for _, field := range model.Fields {
-
-			if field.IsRelation {
+			if field.BoilerField.IsRelation {
 				// Support filtering in relationships (atleast schema wise)
-				schema.WriteString(indent + field.Name + ": " + field.Type + "Where")
+				schema.WriteString(indent + field.RelationName + ": " + field.RelationType + "Where")
 				schema.WriteString("\n")
 			} else {
 				schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
@@ -415,7 +416,7 @@ func getSchema(
 					continue
 				}
 				// not possible yet in input
-				if field.IsRelation {
+				if field.BoilerField.IsRelation && field.BoilerField.IsArray {
 					continue
 				}
 				schema.WriteString(indent + field.Name + ": " + field.FullType)
@@ -439,7 +440,7 @@ func getSchema(
 				}
 				// not possible yet in input
 				// TODO: make this possible for one-to-one structs?
-				if field.IsRelation {
+				if field.BoilerField.IsRelation && field.BoilerField.IsArray {
 					continue
 				}
 				schema.WriteString(indent + field.Name + ": " + field.FullTypeOptional)
@@ -601,184 +602,6 @@ func getSchema(
 	return schema.String()
 }
 
-// parseModelsAndFieldsFromBoiler since these are like User.ID, User.Organization and we want them grouped by
-// modelName and their belonging fields.
-func parseModelsAndFieldsFromBoiler(boilerTypes []*BoilerType) []*Model {
-
-	// sortedModelNames is needed to get the right order back of the models since we want the same order every time
-	// this program has ran.
-	modelNames := []string{}
-
-	// fieldsPerModelName is needed to group the fields per model, so we can get all fields per modelName later on
-	fieldsPerModelName := map[string][]*Field{}
-
-	// Anonymous function because this is used 2 times it prevents duplicated code
-	// It's automatically inits an empty field array if it does not exist yet
-	var addFieldsToModel = func(modelName string, field *Field) {
-		modelNames = appendIfMissing(modelNames, modelName)
-		_, ok := fieldsPerModelName[modelName]
-		if !ok {
-			fieldsPerModelName[modelName] = []*Field{}
-		}
-		fieldsPerModelName[modelName] = append(fieldsPerModelName[modelName], field)
-	}
-
-	// Let's parse boilerTypes to models and fields
-	for _, boiler := range boilerTypes {
-
-		// split on . input is like e.g. User.ID
-		splitted := strings.Split(boiler.Name, ".")
-		// result in e.g. User
-		modelName := splitted[0]
-		// result in e.g. ID
-		boilerFieldName := splitted[1]
-
-		// handle names with lowercase e.g. userR, userL or other sqlboiler extra's
-		if isFirstCharacterLowerCase(modelName) {
-
-			// It's the relations of the model
-			// let's add them so we can use them later
-			if strings.HasSuffix(modelName, "R") {
-				modelName = strcase.ToCamel(strings.TrimSuffix(modelName, "R"))
-				relationField := toField(boilerFieldName, boiler.Type)
-				relationField.IsRelation = true
-				addFieldsToModel(modelName, relationField)
-			}
-
-			// ignore the default handling since this field is already handled
-			continue
-		}
-
-		// Ignore these since these are sqlboiler helper structs for preloading relationships
-		if boilerFieldName == "L" || boilerFieldName == "R" {
-			continue
-		}
-
-		addFieldsToModel(modelName, toField(boilerFieldName, boiler.Type))
-	}
-	sort.Strings(modelNames)
-
-	// Let's generate the models in the same order as the sqlboiler structs were parsed
-	models := make([]*Model, len(modelNames))
-	for i, modelName := range modelNames {
-		fields := fieldsPerModelName[modelName]
-
-		// check if required based on foreign keys
-		for _, f := range fields {
-			if f.IsRelation {
-				f.IsRequired = foreignKeyIsRequired(f, fields)
-				f.FullType = getFullType(f.Type, f.IsArray, f.IsRequired)
-				f.FullTypeOptional = getFullType(f.Type, f.IsArray, false)
-			}
-		}
-		// for _, f := range fields {
-		// 	if f.IsRelation {
-		// 		fmt.Println("Is", modelName, f.BoilerName, "required?")
-		// 		fmt.Println(f.IsRequired)
-		// 	}
-		// }
-
-		models[i] = &Model{
-			Name:   modelName,
-			Fields: fields,
-		}
-	}
-	return models
-}
-
-// getSortedBoilerTypes orders the sqlboiler struct in an ordered slice of BoilerType
-func getSortedBoilerTypes(modelDirectory string) (sortedBoilerTypes []*BoilerType) {
-	boilerTypeMap, _, boilerTypeOrder := boiler.ParseBoilerFile(modelDirectory)
-
-	boilerTypeKeys := make([]string, 0, len(boilerTypeMap))
-	for k := range boilerTypeMap {
-		boilerTypeKeys = append(boilerTypeKeys, k)
-	}
-
-	// order same way as sqlboiler fields with one exception
-	// let createdAt, updatedAt and deletedAt as last
-	sort.Slice(boilerTypeKeys, func(i, b int) bool {
-
-		aKey := boilerTypeKeys[i]
-		bKey := boilerTypeKeys[b]
-
-		aOrder := boilerTypeOrder[aKey]
-		bOrder := boilerTypeOrder[bKey]
-
-		higherOrders := []string{"createdat", "updatedat", "deletedat"}
-		for i, higherOrder := range higherOrders {
-			if strings.HasSuffix(strings.ToLower(aKey), higherOrder) {
-				aOrder += 1000000 + i
-			}
-			if strings.HasSuffix(strings.ToLower(bKey), higherOrder) {
-				bOrder += 10000000 + i
-			}
-		}
-
-		return aOrder < bOrder
-	})
-
-	for _, modelAndField := range boilerTypeKeys {
-		// fmt.Println(modelAndField)
-		sortedBoilerTypes = append(sortedBoilerTypes, &BoilerType{
-			Name: modelAndField,
-			Type: boilerTypeMap[modelAndField],
-		})
-	}
-	return
-}
-
-func foreignKeyIsRequired(relation *Field, foreignKeys []*Field) bool {
-	findKey := relation.BoilerName + "ID"
-	for _, foreignKey := range foreignKeys {
-		if foreignKey.BoilerName == findKey {
-			return isRequired(foreignKey.BoilerType)
-		}
-	}
-	return false
-}
-func relationExist(field *Field, fields []*Field) bool {
-	// e.g we have foreign key from user to organization
-	// organizationID is clutter in your scheme
-	// you only want Organization and OrganizationID should be skipped
-
-	// ID can't possible be a relationship
-	if field.BoilerName == "ID" {
-		return false
-	}
-
-	// Ok, if it ends on ID it could have a relation ship
-	if strings.HasSuffix(field.BoilerName, "ID") {
-		for _, checkWithField := range fields {
-			// don't compare to itself
-			if field == checkWithField {
-				continue
-			}
-
-			if checkWithField.BoilerName == strings.TrimSuffix(field.BoilerName, "ID") && checkWithField.IsRelation {
-				// fmt.Println("Remove from fields")
-				// fmt.Println(checkWithField.BoilerName)
-				// fmt.Println(strings.TrimSuffix(field.BoilerName, "ID"))
-				return true
-			}
-		}
-
-	}
-
-	return false
-}
-
-func isRequired(boilerType string) bool {
-	if strings.HasPrefix(boilerType, "null.") || strings.HasPrefix(boilerType, "*") {
-		return false
-	}
-	return true
-}
-
-func isArray(boilerType string) bool {
-	return strings.HasSuffix(boilerType, "Slice")
-}
-
 func getFullType(fieldType string, isArray bool, isRequired bool) string {
 	gType := fieldType
 
@@ -794,19 +617,44 @@ func getFullType(fieldType string, isArray bool, isRequired bool) string {
 	return gType
 }
 
-func toField(boilerName, boilerType string) *Field {
-	t := toGraphQLType(boilerName, boilerType)
-	array := isArray(boilerType)
-	required := isRequired(boilerType)
+func boilerModelsToModels(boilerModels []*boiler.BoilerModel) []*Model {
+	models := make([]*Model, len(boilerModels))
+	for i, boilerModel := range boilerModels {
+		models[i] = &Model{
+			Name:   boilerModel.Name,
+			Fields: boilerFieldsToFields(boilerModel.Fields),
+		}
+	}
+	return models
+}
+
+func boilerFieldsToFields(boilerFields []*boiler.BoilerField) []*Field {
+	fields := make([]*Field, len(boilerFields))
+	for i, boilerField := range boilerFields {
+		fields[i] = boilerFieldToField(boilerField)
+	}
+	return fields
+}
+
+func boilerFieldToField(boilerField *boiler.BoilerField) *Field {
+	relationName := strcase.ToLowerCamel(boilerField.RelationshipName)
+	relationType := boilerField.Relationship.Name
+	relationFullType := getFullType(
+		relationType,
+		boilerField.IsArray,
+		boilerField.IsRequired,
+	)
+
+	t := toGraphQLType(boilerField.Name, boilerField.Type)
 	return &Field{
-		Name:             toGraphQLName(boilerName, boilerType),
+		Name:             toGraphQLName(boilerField.Name, boilerField.Type),
+		RelationName:     relationName,
+		RelationType:     relationType,
 		Type:             t,
-		FullType:         getFullType(t, array, required),
-		FullTypeOptional: getFullType(t, array, false),
-		BoilerName:       boilerName,
-		BoilerType:       boilerType,
-		IsRequired:       required,
-		IsArray:          array,
+		FullType:         getFullType(t, boilerField.IsArray, boilerField.IsRequired),
+		FullTypeOptional: getFullType(t, boilerField.IsArray, false),
+		RelationFullType: relationFullType,
+		BoilerField:      boilerField,
 	}
 }
 
@@ -874,6 +722,7 @@ func appendIfMissing(slice []string, v string) []string {
 	}
 	return append(slice, v)
 }
+
 func fieldsWithout(fields []*Field, skipFieldNames []string) []*Field {
 	filteredFields := []*Field{}
 	for _, field := range fields {
@@ -883,6 +732,7 @@ func fieldsWithout(fields []*Field, skipFieldNames []string) []*Field {
 	}
 	return filteredFields
 }
+
 func sliceContains(slice []string, v string) bool {
 	for _, s := range slice {
 		if s == v {
