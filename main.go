@@ -244,7 +244,6 @@ input StringFilter {
 	contain: String
 	notContain: String
 
-
 	startWithStrict: String # Camel sensitive
 	notStartWithStrict: String # Camel sensitive
 
