@@ -230,16 +230,29 @@ input IDFilter {
 
 input StringFilter {
 	equalTo: String
+	notEqualTo: String
+
 	in: [String!]
 	notIn: [String!]
 
-	startsWith: String
-	endsWith: String
-	contains: String
+	startWith: String
+	notStartWith: String
 
-	startsWithStrict: String # Camel sensitive
-	endsWithStrict: String # Camel sensitive
-	containsStrict: String # Camel sensitive
+	endWith: String
+	notEndWith: String
+
+	contain: String
+	notContain: String
+
+
+	startWithStrict: String # Camel sensitive
+	notStartWithStrict: String # Camel sensitive
+
+	endWithStrict: String # Camel sensitive
+	notEndWithStrict: String # Camel sensitive
+
+	containStrict: String # Camel sensitive
+	notContainStrict: String # Camel sensitive
 }
 
 input IntFilter {
