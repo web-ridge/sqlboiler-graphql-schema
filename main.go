@@ -224,6 +224,8 @@ func fileExists(filename string) bool {
 
 const queryHelperStructs = `
 input IDFilter {
+	equalTo: ID
+	notEqualTo: ID
 	in: [ID!]
 	notIn: [ID!]
 }
@@ -256,6 +258,7 @@ input StringFilter {
 
 input IntFilter {
 	equalTo: Int
+	notEqualTo: Int
 	lessThan: Int
 	lessThanOrEqualTo: Int
 	moreThan: Int
@@ -266,6 +269,7 @@ input IntFilter {
 
 input FloatFilter {
 	equalTo: Float
+	notEqualTo: Float
 	lessThan: Float
 	lessThanOrEqualTo: Float
 	moreThan: Float
@@ -275,7 +279,9 @@ input FloatFilter {
 }
 
 input BooleanFilter {
-	equalTo: Boolean
+	isTrue: Boolean
+	isFalse: Boolean
+	isNull: Boolean
 }
 `
 
