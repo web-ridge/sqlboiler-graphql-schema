@@ -422,10 +422,10 @@ func getSchema(
 		schema.WriteString("\n")
 
 		// lists
-		modelArray := pluralizer.Plural(model.Name)
+		modelPluralName := pluralizer.Plural(model.Name)
 		schema.WriteString(indent)
 		// TODO: pagination
-		schema.WriteString(strcase.ToLowerCamel(modelArray) + "(filter: " + model.Name + "Filter)")
+		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter)")
 		schema.WriteString(": ")
 		schema.WriteString("[" + model.Name + "!]!")
 		schema.WriteString(joinedDirectives)
@@ -441,7 +441,7 @@ func getSchema(
 		for _, model := range models {
 			filteredFields := fieldsWithout(model.Fields, skipInputFields)
 
-			modelArray := pluralizer.Plural(model.Name)
+			modelPluralName := pluralizer.Plural(model.Name)
 			// input UserCreateInput {
 			// 	firstName: String!
 			// 	lastName: String
@@ -490,22 +490,22 @@ func getSchema(
 			schema.WriteString("\n")
 
 			if batchCreate {
-				schema.WriteString("input " + modelArray + "CreateInput {")
+				schema.WriteString("input " + modelPluralName + "CreateInput {")
 				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "CreateInput!]!")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "CreateInput!]!")
 				schema.WriteString("}")
 				schema.WriteString("\n")
 				schema.WriteString("\n")
 			}
 
-			if batchUpdate {
-				schema.WriteString("input " + modelArray + "UpdateInput {")
-				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "UpdateInput!]!")
-				schema.WriteString("}")
-				schema.WriteString("\n")
-				schema.WriteString("\n")
-			}
+			// if batchUpdate {
+			// 	schema.WriteString("input " + modelPluralName + "UpdateInput {")
+			// 	schema.WriteString("\n")
+			// 	schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "UpdateInput!]!")
+			// 	schema.WriteString("}")
+			// 	schema.WriteString("\n")
+			// 	schema.WriteString("\n")
+			// }
 
 			// type UserPayload {
 			// 	user: User!
@@ -535,9 +535,9 @@ func getSchema(
 			// 	ids: [ID!]!
 			// }
 			if batchCreate {
-				schema.WriteString("type " + modelArray + "Payload {")
+				schema.WriteString("type " + modelPluralName + "Payload {")
 				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelArray) + ": [" + model.Name + "!]!")
+				schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "!]!")
 				schema.WriteString("\n")
 				schema.WriteString("}")
 				schema.WriteString("\n")
@@ -548,7 +548,7 @@ func getSchema(
 			// 	ids: [ID!]!
 			// }
 			if batchDelete {
-				schema.WriteString("type " + modelArray + "DeletePayload {")
+				schema.WriteString("type " + modelPluralName + "DeletePayload {")
 				schema.WriteString("\n")
 				schema.WriteString(indent + "ids: [ID!]!")
 				schema.WriteString("\n")
@@ -560,7 +560,7 @@ func getSchema(
 			// 	ok: Boolean!
 			// }
 			if batchUpdate {
-				schema.WriteString("type " + modelArray + "UpdatePayload {")
+				schema.WriteString("type " + modelPluralName + "UpdatePayload {")
 				schema.WriteString("\n")
 				schema.WriteString(indent + "ok: Boolean!")
 				schema.WriteString("\n")
@@ -576,7 +576,7 @@ func getSchema(
 		schema.WriteString("\n")
 		for _, model := range models {
 
-			modelArray := pluralizer.Plural(model.Name)
+			modelPluralName := pluralizer.Plural(model.Name)
 
 			// create single
 			// e.g createUser(input: UserInput!): UserPayload!
@@ -591,9 +591,9 @@ func getSchema(
 			// e.g createUsers(input: [UsersInput!]!): UsersPayload!
 			if batchCreate {
 				schema.WriteString(indent)
-				schema.WriteString("create" + modelArray + "(input: " + modelArray + "CreateInput!)")
+				schema.WriteString("create" + modelPluralName + "(input: " + modelPluralName + "CreateInput!)")
 				schema.WriteString(": ")
-				schema.WriteString(modelArray + "Payload!")
+				schema.WriteString(modelPluralName + "Payload!")
 				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
@@ -608,12 +608,12 @@ func getSchema(
 			schema.WriteString("\n")
 
 			// update multiple (batch update)
-			// e.g updateUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
+			// e.g updateUsers(filter: UserFilter, input: UsersInput!): UsersPayload!
 			if batchUpdate {
 				schema.WriteString(indent)
-				schema.WriteString("update" + modelArray + "(filter: " + model.Name + "Filter, input: " + modelArray + "UpdateInput!)")
+				schema.WriteString("update" + modelPluralName + "(filter: " + model.Name + "Filter, input: " + model.Name + "UpdateInput!)")
 				schema.WriteString(": ")
-				schema.WriteString(modelArray + "UpdatePayload!")
+				schema.WriteString(modelPluralName + "UpdatePayload!")
 				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
@@ -631,9 +631,9 @@ func getSchema(
 			// e.g deleteUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
 			if batchDelete {
 				schema.WriteString(indent)
-				schema.WriteString("delete" + modelArray + "(filter: " + model.Name + "Filter)")
+				schema.WriteString("delete" + modelPluralName + "(filter: " + model.Name + "Filter)")
 				schema.WriteString(": ")
-				schema.WriteString(modelArray + "DeletePayload!")
+				schema.WriteString(modelPluralName + "DeletePayload!")
 				schema.WriteString(joinedDirectives)
 				schema.WriteString("\n")
 			}
