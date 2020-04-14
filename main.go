@@ -33,6 +33,7 @@ func main() {
 	var batchDelete bool
 	var skipInputFields cli.StringSlice
 	var directives cli.StringSlice
+	var pagination string
 
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -82,6 +83,12 @@ func main() {
 				Value:       true,
 				Destination: &batchDelete,
 			},
+			&cli.StringFlag{
+				Name:        "pagination",
+				Usage:       "generate pagination support for models",
+				Value:       "offset",
+				Destination: &pagination,
+			},
 		},
 		Action: func(c *cli.Context) error {
 
@@ -94,6 +101,7 @@ func main() {
 				batchDelete,
 				skipInputFields.Value(),
 				directives.Value(),
+				pagination,
 			)
 
 			// TODO: Write schema to the configured location
@@ -309,6 +317,7 @@ func getSchema(
 	batchDelete bool,
 	skipInputFields []string,
 	directivesSlice []string,
+	pagination string,
 ) string {
 	var schema strings.Builder
 
@@ -379,6 +388,22 @@ func getSchema(
 		schema.WriteString("}")
 		schema.WriteString("\n")
 		schema.WriteString("\n")
+		// Generate a pagination struct
+		if pagination == "offset" {
+			// type UserPagination {
+			// 	limit: Int!
+			// 	page: Int!
+			// }
+			schema.WriteString("input " + model.Name + "Pagination {")
+			schema.WriteString("\n")
+			schema.WriteString(indent + "limit: Int!")
+			schema.WriteString("\n")
+			schema.WriteString(indent + "page: Int!")
+			schema.WriteString("\n")
+			schema.WriteString("}")
+			schema.WriteString("\n")
+			schema.WriteString("\n")
+		}
 		// Generate a where struct
 		// type UserWhere {
 		// 	id: IDFilter
@@ -424,8 +449,11 @@ func getSchema(
 		// lists
 		modelPluralName := pluralizer.Plural(model.Name)
 		schema.WriteString(indent)
-		// TODO: pagination
-		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter)")
+		var variablesSuffix = ")"
+		if (pagination == "offset") {
+			variablesSuffix = ", pagination: " + model.Name + "Pagination)"
+		}
+		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter" + variablesSuffix)
 		schema.WriteString(": ")
 		schema.WriteString("[" + model.Name + "!]!")
 		schema.WriteString(joinedDirectives)
