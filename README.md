@@ -38,6 +38,7 @@ GLOBAL OPTIONS:
    --batch-update             generate batch update for models (default: true)
    --batch-create             generate batch create for models (default: true)
    --batch-delete             generate batch delete for models (default: true)
+   --pagination               generate pagination support for models (default: "offset")
    --help, -h                 show help (default: false)
 ```
 
