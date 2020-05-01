@@ -86,7 +86,7 @@ func main() {
 			&cli.StringFlag{
 				Name:        "pagination",
 				Usage:       "generate pagination support for models",
-				Value:       "offset",
+				Value:       "",
 				Destination: &pagination,
 			},
 		},
@@ -449,11 +449,11 @@ func getSchema(
 		// lists
 		modelPluralName := pluralizer.Plural(model.Name)
 		schema.WriteString(indent)
-		var variablesSuffix = ")"
-		if (pagination == "offset") {
-			variablesSuffix = ", pagination: " + model.Name + "Pagination)"
+		var paginiationParameter string
+		if pagination == "offset" {
+			paginiationParameter = ", pagination: " + model.Name + "Pagination"
 		}
-		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter" + variablesSuffix)
+		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter" + paginiationParameter + ")")
 		schema.WriteString(": ")
 		schema.WriteString("[" + model.Name + "!]!")
 		schema.WriteString(joinedDirectives)
