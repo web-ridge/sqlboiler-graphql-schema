@@ -38,7 +38,7 @@ GLOBAL OPTIONS:
    --batch-update             generate batch update for models (default: true)
    --batch-create             generate batch create for models (default: true)
    --batch-delete             generate batch delete for models (default: true)
-   --pagination               generate pagination support for models (default: "offset")
+   --pagination               generate pagination support for models (default: "")
    --help, -h                 show help (default: false)
 ```
 
@@ -56,7 +56,7 @@ GLOBAL OPTIONS:
 - Generating payload for mutations (100%)
 - Generating mutations (100%)
 - Generating mutations for array models (0% WIP)
-- Generating pagination for array models (0% WIP)
+- Generating pagination for array models (20%, offset-based pagination done, TODO: cursor-based paginiation)
 
 ## Future roadmap
 
