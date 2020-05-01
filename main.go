@@ -21,6 +21,7 @@ func init() {
 }
 
 const indent = "\t"
+const lineBreak = "\n"
 
 // global configs
 
@@ -319,7 +320,7 @@ func getSchema(
 	directivesSlice []string,
 	pagination string,
 ) string {
-	var schema strings.Builder
+	var s strings.Builder
 
 	// Parse models and their fields based on the sqlboiler model directory
 	boilerModels := boiler.GetBoilerModels(modelDirectory)
@@ -328,10 +329,10 @@ func getSchema(
 	fullDirectives := []string{}
 	for _, defaultDirective := range directivesSlice {
 		fullDirectives = append(fullDirectives, "@"+defaultDirective)
-		schema.WriteString(fmt.Sprintf("directive @%v on FIELD_DEFINITION", defaultDirective))
-		schema.WriteString("\n")
+		s.WriteString(fmt.Sprintf("directive @%v on FIELD_DEFINITION", defaultDirective))
+		s.WriteString(lineBreak)
 	}
-	schema.WriteString("\n")
+	s.WriteString(lineBreak)
 
 	joinedDirectives := strings.Join(fullDirectives, " ")
 	// Create basic structs e.g.
@@ -343,29 +344,29 @@ func getSchema(
 	// }
 	for _, model := range models {
 
-		schema.WriteString("type " + model.Name + " {")
-		schema.WriteString("\n")
+		s.WriteString("type " + model.Name + " {")
+		s.WriteString(lineBreak)
 		for _, field := range model.Fields {
 			// e.g we have foreign key from user to organization
 			// organizationID is clutter in your scheme
 			// you only want Organization and OrganizationID should be skipped
 			if field.BoilerField.IsRelation {
-				schema.WriteString(indent + field.RelationName + ": " + field.RelationFullType)
-				schema.WriteString("\n")
+				s.WriteString(indent + field.RelationName + ": " + field.RelationFullType)
+				s.WriteString(lineBreak)
 			} else {
-				schema.WriteString(indent + field.Name + ": " + field.FullType)
-				schema.WriteString("\n")
+				s.WriteString(indent + field.Name + ": " + field.FullType)
+				s.WriteString(lineBreak)
 			}
 
 		}
-		schema.WriteString("}")
-		schema.WriteString("\n")
-		schema.WriteString("\n")
+		s.WriteString("}")
+		s.WriteString(lineBreak)
+		s.WriteString(lineBreak)
 	}
 
 	// Add helpers for filtering lists
-	schema.WriteString(queryHelperStructs)
-	schema.WriteString("\n")
+	s.WriteString(queryHelperStructs)
+	s.WriteString(lineBreak)
 
 	// generate filter structs per model
 	for _, model := range models {
@@ -379,30 +380,30 @@ func getSchema(
 		// 	search: String
 		// 	where: UserWhere
 		// }
-		schema.WriteString("input " + model.Name + "Filter {")
-		schema.WriteString("\n")
-		schema.WriteString(indent + "search: String")
-		schema.WriteString("\n")
-		schema.WriteString(indent + "where: " + model.Name + "Where")
-		schema.WriteString("\n")
-		schema.WriteString("}")
-		schema.WriteString("\n")
-		schema.WriteString("\n")
+		s.WriteString("input " + model.Name + "Filter {")
+		s.WriteString(lineBreak)
+		s.WriteString(indent + "search: String")
+		s.WriteString(lineBreak)
+		s.WriteString(indent + "where: " + model.Name + "Where")
+		s.WriteString(lineBreak)
+		s.WriteString("}")
+		s.WriteString(lineBreak)
+		s.WriteString(lineBreak)
 		// Generate a pagination struct
 		if pagination == "offset" {
 			// type UserPagination {
 			// 	limit: Int!
 			// 	page: Int!
 			// }
-			schema.WriteString("input " + model.Name + "Pagination {")
-			schema.WriteString("\n")
-			schema.WriteString(indent + "limit: Int!")
-			schema.WriteString("\n")
-			schema.WriteString(indent + "page: Int!")
-			schema.WriteString("\n")
-			schema.WriteString("}")
-			schema.WriteString("\n")
-			schema.WriteString("\n")
+			s.WriteString("input " + model.Name + "Pagination {")
+			s.WriteString(lineBreak)
+			s.WriteString(indent + "limit: Int!")
+			s.WriteString(lineBreak)
+			s.WriteString(indent + "page: Int!")
+			s.WriteString(lineBreak)
+			s.WriteString("}")
+			s.WriteString(lineBreak)
+			s.WriteString(lineBreak)
 		}
 		// Generate a where struct
 		// type UserWhere {
@@ -412,57 +413,57 @@ func getSchema(
 		// 	or: FlowBlockWhere
 		// 	and: FlowBlockWhere
 		// }
-		schema.WriteString("input " + model.Name + "Where {")
-		schema.WriteString("\n")
+		s.WriteString("input " + model.Name + "Where {")
+		s.WriteString(lineBreak)
 		for _, field := range model.Fields {
 			if field.BoilerField.IsRelation {
 				// Support filtering in relationships (atleast schema wise)
-				schema.WriteString(indent + field.RelationName + ": " + field.RelationType + "Where")
-				schema.WriteString("\n")
+				s.WriteString(indent + field.RelationName + ": " + field.RelationType + "Where")
+				s.WriteString(lineBreak)
 			} else {
-				schema.WriteString(indent + field.Name + ": " + field.Type + "Filter")
-				schema.WriteString("\n")
+				s.WriteString(indent + field.Name + ": " + field.Type + "Filter")
+				s.WriteString(lineBreak)
 			}
 		}
-		schema.WriteString(indent + "or: " + model.Name + "Where")
-		schema.WriteString("\n")
+		s.WriteString(indent + "or: " + model.Name + "Where")
+		s.WriteString(lineBreak)
 
-		schema.WriteString(indent + "and: " + model.Name + "Where")
-		schema.WriteString("\n")
+		s.WriteString(indent + "and: " + model.Name + "Where")
+		s.WriteString(lineBreak)
 
-		schema.WriteString("}")
-		schema.WriteString("\n")
-		schema.WriteString("\n")
+		s.WriteString("}")
+		s.WriteString(lineBreak)
+		s.WriteString(lineBreak)
 	}
 
-	schema.WriteString("type Query {")
-	schema.WriteString("\n")
+	s.WriteString("type Query {")
+	s.WriteString(lineBreak)
 	for _, model := range models {
 		// single models
-		schema.WriteString(indent)
-		schema.WriteString(strcase.ToLowerCamel(model.Name) + "(id: ID!)")
-		schema.WriteString(": ")
-		schema.WriteString(model.Name + "!")
-		schema.WriteString(joinedDirectives)
-		schema.WriteString("\n")
+		s.WriteString(indent)
+		s.WriteString(strcase.ToLowerCamel(model.Name) + "(id: ID!)")
+		s.WriteString(": ")
+		s.WriteString(model.Name + "!")
+		s.WriteString(joinedDirectives)
+		s.WriteString(lineBreak)
 
 		// lists
 		modelPluralName := pluralizer.Plural(model.Name)
-		schema.WriteString(indent)
+		s.WriteString(indent)
 		var paginiationParameter string
 		if pagination == "offset" {
 			paginiationParameter = ", pagination: " + model.Name + "Pagination"
 		}
-		schema.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter" + paginiationParameter + ")")
-		schema.WriteString(": ")
-		schema.WriteString("[" + model.Name + "!]!")
-		schema.WriteString(joinedDirectives)
-		schema.WriteString("\n")
+		s.WriteString(strcase.ToLowerCamel(modelPluralName) + "(filter: " + model.Name + "Filter" + paginiationParameter + ")")
+		s.WriteString(": ")
+		s.WriteString("[" + model.Name + "!]!")
+		s.WriteString(joinedDirectives)
+		s.WriteString(lineBreak)
 
 	}
-	schema.WriteString("}")
-	schema.WriteString("\n")
-	schema.WriteString("\n")
+	s.WriteString("}")
+	s.WriteString(lineBreak)
+	s.WriteString(lineBreak)
 
 	// Generate input and payloads for mutatations
 	if mutations {
@@ -475,8 +476,8 @@ func getSchema(
 			// 	lastName: String
 			//	organizationId: ID!
 			// }
-			schema.WriteString("input " + model.Name + "CreateInput {")
-			schema.WriteString("\n")
+			s.WriteString("input " + model.Name + "CreateInput {")
+			s.WriteString(lineBreak)
 			for _, field := range filteredFields {
 				// id is not required in create and will be specified in update resolver
 				if field.Name == "id" {
@@ -486,20 +487,20 @@ func getSchema(
 				if field.BoilerField.IsRelation && field.BoilerField.IsArray {
 					continue
 				}
-				schema.WriteString(indent + field.Name + ": " + field.FullType)
-				schema.WriteString("\n")
+				s.WriteString(indent + field.Name + ": " + field.FullType)
+				s.WriteString(lineBreak)
 			}
-			schema.WriteString("}")
-			schema.WriteString("\n")
-			schema.WriteString("\n")
+			s.WriteString("}")
+			s.WriteString(lineBreak)
+			s.WriteString(lineBreak)
 
 			// input UserUpdateInput {
 			// 	firstName: String!
 			// 	lastName: String
 			//	organizationId: ID!
 			// }
-			schema.WriteString("input " + model.Name + "UpdateInput {")
-			schema.WriteString("\n")
+			s.WriteString("input " + model.Name + "UpdateInput {")
+			s.WriteString(lineBreak)
 			for _, field := range filteredFields {
 				// id is not required in create and will be specified in update resolver
 				if field.Name == "id" {
@@ -510,169 +511,169 @@ func getSchema(
 				if field.BoilerField.IsRelation && field.BoilerField.IsArray {
 					continue
 				}
-				schema.WriteString(indent + field.Name + ": " + field.FullTypeOptional)
-				schema.WriteString("\n")
+				s.WriteString(indent + field.Name + ": " + field.FullTypeOptional)
+				s.WriteString(lineBreak)
 			}
-			schema.WriteString("}")
-			schema.WriteString("\n")
-			schema.WriteString("\n")
+			s.WriteString("}")
+			s.WriteString(lineBreak)
+			s.WriteString(lineBreak)
 
 			if batchCreate {
-				schema.WriteString("input " + modelPluralName + "CreateInput {")
-				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "CreateInput!]!")
-				schema.WriteString("}")
-				schema.WriteString("\n")
-				schema.WriteString("\n")
+				s.WriteString("input " + modelPluralName + "CreateInput {")
+				s.WriteString(lineBreak)
+				s.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "CreateInput!]!")
+				s.WriteString("}")
+				s.WriteString(lineBreak)
+				s.WriteString(lineBreak)
 			}
 
 			// if batchUpdate {
-			// 	schema.WriteString("input " + modelPluralName + "UpdateInput {")
-			// 	schema.WriteString("\n")
-			// 	schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "UpdateInput!]!")
-			// 	schema.WriteString("}")
-			// 	schema.WriteString("\n")
-			// 	schema.WriteString("\n")
+			// 	s.WriteString("input " + modelPluralName + "UpdateInput {")
+			// 	s.WriteString(lineBreak)
+			// 	s.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "UpdateInput!]!")
+			// 	s.WriteString("}")
+			// 	s.WriteString(lineBreak)
+			// 	s.WriteString(lineBreak)
 			// }
 
 			// type UserPayload {
 			// 	user: User!
 			// }
-			schema.WriteString("type " + model.Name + "Payload {")
-			schema.WriteString("\n")
-			schema.WriteString(indent + strcase.ToLowerCamel(model.Name) + ": " + model.Name + "!")
-			schema.WriteString("\n")
-			schema.WriteString("}")
-			schema.WriteString("\n")
-			schema.WriteString("\n")
+			s.WriteString("type " + model.Name + "Payload {")
+			s.WriteString(lineBreak)
+			s.WriteString(indent + strcase.ToLowerCamel(model.Name) + ": " + model.Name + "!")
+			s.WriteString(lineBreak)
+			s.WriteString("}")
+			s.WriteString(lineBreak)
+			s.WriteString(lineBreak)
 
 			// TODO batch, delete input and payloads
 
 			// type UserDeletePayload {
 			// 	id: ID!
 			// }
-			schema.WriteString("type " + model.Name + "DeletePayload {")
-			schema.WriteString("\n")
-			schema.WriteString(indent + "id: ID!")
-			schema.WriteString("\n")
-			schema.WriteString("}")
-			schema.WriteString("\n")
-			schema.WriteString("\n")
+			s.WriteString("type " + model.Name + "DeletePayload {")
+			s.WriteString(lineBreak)
+			s.WriteString(indent + "id: ID!")
+			s.WriteString(lineBreak)
+			s.WriteString("}")
+			s.WriteString(lineBreak)
+			s.WriteString(lineBreak)
 
 			// type UsersPayload {
 			// 	ids: [ID!]!
 			// }
 			if batchCreate {
-				schema.WriteString("type " + modelPluralName + "Payload {")
-				schema.WriteString("\n")
-				schema.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "!]!")
-				schema.WriteString("\n")
-				schema.WriteString("}")
-				schema.WriteString("\n")
-				schema.WriteString("\n")
+				s.WriteString("type " + modelPluralName + "Payload {")
+				s.WriteString(lineBreak)
+				s.WriteString(indent + strcase.ToLowerCamel(modelPluralName) + ": [" + model.Name + "!]!")
+				s.WriteString(lineBreak)
+				s.WriteString("}")
+				s.WriteString(lineBreak)
+				s.WriteString(lineBreak)
 			}
 
 			// type UsersDeletePayload {
 			// 	ids: [ID!]!
 			// }
 			if batchDelete {
-				schema.WriteString("type " + modelPluralName + "DeletePayload {")
-				schema.WriteString("\n")
-				schema.WriteString(indent + "ids: [ID!]!")
-				schema.WriteString("\n")
-				schema.WriteString("}")
-				schema.WriteString("\n")
-				schema.WriteString("\n")
+				s.WriteString("type " + modelPluralName + "DeletePayload {")
+				s.WriteString(lineBreak)
+				s.WriteString(indent + "ids: [ID!]!")
+				s.WriteString(lineBreak)
+				s.WriteString("}")
+				s.WriteString(lineBreak)
+				s.WriteString(lineBreak)
 			}
 			// type UsersUpdatePayload {
 			// 	ok: Boolean!
 			// }
 			if batchUpdate {
-				schema.WriteString("type " + modelPluralName + "UpdatePayload {")
-				schema.WriteString("\n")
-				schema.WriteString(indent + "ok: Boolean!")
-				schema.WriteString("\n")
-				schema.WriteString("}")
-				schema.WriteString("\n")
-				schema.WriteString("\n")
+				s.WriteString("type " + modelPluralName + "UpdatePayload {")
+				s.WriteString(lineBreak)
+				s.WriteString(indent + "ok: Boolean!")
+				s.WriteString(lineBreak)
+				s.WriteString("}")
+				s.WriteString(lineBreak)
+				s.WriteString(lineBreak)
 			}
 
 		}
 
 		// Generate mutation queries
-		schema.WriteString("type Mutation {")
-		schema.WriteString("\n")
+		s.WriteString("type Mutation {")
+		s.WriteString(lineBreak)
 		for _, model := range models {
 
 			modelPluralName := pluralizer.Plural(model.Name)
 
 			// create single
 			// e.g createUser(input: UserInput!): UserPayload!
-			schema.WriteString(indent)
-			schema.WriteString("create" + model.Name + "(input: " + model.Name + "CreateInput!)")
-			schema.WriteString(": ")
-			schema.WriteString(model.Name + "Payload!")
-			schema.WriteString(joinedDirectives)
-			schema.WriteString("\n")
+			s.WriteString(indent)
+			s.WriteString("create" + model.Name + "(input: " + model.Name + "CreateInput!)")
+			s.WriteString(": ")
+			s.WriteString(model.Name + "Payload!")
+			s.WriteString(joinedDirectives)
+			s.WriteString(lineBreak)
 
 			// create multiple
 			// e.g createUsers(input: [UsersInput!]!): UsersPayload!
 			if batchCreate {
-				schema.WriteString(indent)
-				schema.WriteString("create" + modelPluralName + "(input: " + modelPluralName + "CreateInput!)")
-				schema.WriteString(": ")
-				schema.WriteString(modelPluralName + "Payload!")
-				schema.WriteString(joinedDirectives)
-				schema.WriteString("\n")
+				s.WriteString(indent)
+				s.WriteString("create" + modelPluralName + "(input: " + modelPluralName + "CreateInput!)")
+				s.WriteString(": ")
+				s.WriteString(modelPluralName + "Payload!")
+				s.WriteString(joinedDirectives)
+				s.WriteString(lineBreak)
 			}
 
 			// update single
 			// e.g updateUser(id: ID!, input: UserInput!): UserPayload!
-			schema.WriteString(indent)
-			schema.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "UpdateInput!)")
-			schema.WriteString(": ")
-			schema.WriteString(model.Name + "Payload!")
-			schema.WriteString(joinedDirectives)
-			schema.WriteString("\n")
+			s.WriteString(indent)
+			s.WriteString("update" + model.Name + "(id: ID!, input: " + model.Name + "UpdateInput!)")
+			s.WriteString(": ")
+			s.WriteString(model.Name + "Payload!")
+			s.WriteString(joinedDirectives)
+			s.WriteString(lineBreak)
 
 			// update multiple (batch update)
 			// e.g updateUsers(filter: UserFilter, input: UsersInput!): UsersPayload!
 			if batchUpdate {
-				schema.WriteString(indent)
-				schema.WriteString("update" + modelPluralName + "(filter: " + model.Name + "Filter, input: " + model.Name + "UpdateInput!)")
-				schema.WriteString(": ")
-				schema.WriteString(modelPluralName + "UpdatePayload!")
-				schema.WriteString(joinedDirectives)
-				schema.WriteString("\n")
+				s.WriteString(indent)
+				s.WriteString("update" + modelPluralName + "(filter: " + model.Name + "Filter, input: " + model.Name + "UpdateInput!)")
+				s.WriteString(": ")
+				s.WriteString(modelPluralName + "UpdatePayload!")
+				s.WriteString(joinedDirectives)
+				s.WriteString(lineBreak)
 			}
 
 			// delete single
 			// e.g deleteUser(id: ID!): UserPayload!
-			schema.WriteString(indent)
-			schema.WriteString("delete" + model.Name + "(id: ID!)")
-			schema.WriteString(": ")
-			schema.WriteString(model.Name + "DeletePayload!")
-			schema.WriteString(joinedDirectives)
-			schema.WriteString("\n")
+			s.WriteString(indent)
+			s.WriteString("delete" + model.Name + "(id: ID!)")
+			s.WriteString(": ")
+			s.WriteString(model.Name + "DeletePayload!")
+			s.WriteString(joinedDirectives)
+			s.WriteString(lineBreak)
 
 			// delete multiple
 			// e.g deleteUsers(filter: UserFilter, input: [UsersInput!]!): UsersPayload!
 			if batchDelete {
-				schema.WriteString(indent)
-				schema.WriteString("delete" + modelPluralName + "(filter: " + model.Name + "Filter)")
-				schema.WriteString(": ")
-				schema.WriteString(modelPluralName + "DeletePayload!")
-				schema.WriteString(joinedDirectives)
-				schema.WriteString("\n")
+				s.WriteString(indent)
+				s.WriteString("delete" + modelPluralName + "(filter: " + model.Name + "Filter)")
+				s.WriteString(": ")
+				s.WriteString(modelPluralName + "DeletePayload!")
+				s.WriteString(joinedDirectives)
+				s.WriteString(lineBreak)
 			}
 
 		}
-		schema.WriteString("}")
-		schema.WriteString("\n")
-		schema.WriteString("\n")
+		s.WriteString("}")
+		s.WriteString(lineBreak)
+		s.WriteString(lineBreak)
 	}
 
-	return schema.String()
+	return s.String()
 }
 
 func getFullType(fieldType string, isArray bool, isRequired bool) string {
