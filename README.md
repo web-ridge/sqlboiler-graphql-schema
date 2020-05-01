@@ -15,8 +15,8 @@ You can edit your schema like you want later and re-generate if your database ch
 
 ## Other related projects from webRidge
 
-- https://github.com/web-ridge/gqlgen-sqlboiler (Generates converts between your qqlgen scheme and sqlboiler, and in the future will generate basic resolvers)
-- https://github.com/web-ridge/graphql-schema-react-native-app (Generated React Native (Web) app based on your GraphQL scheme, not finished yet.)
+- https://github.com/web-ridge/gqlgen-sqlboiler (Generates converts between your qqlgen scheme and sqlboiler, and it will generate resolvers for the generated schema if you enable it!)
+- https://github.com/web-ridge/graphql-schema-react-native-app (Generate a React Native (Web) app based on your GraphQL scheme, WIP.)
 
 ## Options
 
