@@ -11,7 +11,7 @@ import (
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
-	"github.com/web-ridge/gqlgen-sqlboiler/boiler"
+	gqlgen_sqlboiler "github.com/web-ridge/gqlgen-sqlboiler/v2"
 )
 
 var pluralizer *pluralize.Client
@@ -307,7 +307,7 @@ type Field struct {
 	FullType         string // e.g String! or if array [String!]
 	RelationFullType string // [Posts!]
 	FullTypeOptional string // e.g. String or if array [String]
-	BoilerField      *boiler.BoilerField
+	BoilerField      *gqlgen_sqlboiler.BoilerField
 }
 
 func getSchema(
@@ -323,7 +323,7 @@ func getSchema(
 	var s strings.Builder
 
 	// Parse models and their fields based on the sqlboiler model directory
-	boilerModels := boiler.GetBoilerModels(modelDirectory)
+	boilerModels := gqlgen_sqlboiler.GetBoilerModels(modelDirectory)
 	models := boilerModelsToModels(boilerModels)
 
 	fullDirectives := []string{}
@@ -691,7 +691,7 @@ func getFullType(fieldType string, isArray bool, isRequired bool) string {
 	return gType
 }
 
-func boilerModelsToModels(boilerModels []*boiler.BoilerModel) []*Model {
+func boilerModelsToModels(boilerModels []*gqlgen_sqlboiler.BoilerModel) []*Model {
 	models := make([]*Model, len(boilerModels))
 	for i, boilerModel := range boilerModels {
 		models[i] = &Model{
@@ -702,7 +702,7 @@ func boilerModelsToModels(boilerModels []*boiler.BoilerModel) []*Model {
 	return models
 }
 
-func boilerFieldsToFields(boilerFields []*boiler.BoilerField) []*Field {
+func boilerFieldsToFields(boilerFields []*gqlgen_sqlboiler.BoilerField) []*Field {
 	fields := make([]*Field, len(boilerFields))
 	for i, boilerField := range boilerFields {
 		fields[i] = boilerFieldToField(boilerField)
@@ -710,7 +710,7 @@ func boilerFieldsToFields(boilerFields []*boiler.BoilerField) []*Field {
 	return fields
 }
 
-func boilerFieldToField(boilerField *boiler.BoilerField) *Field {
+func boilerFieldToField(boilerField *gqlgen_sqlboiler.BoilerField) *Field {
 	relationName := strcase.ToLowerCamel(boilerField.RelationshipName)
 	relationType := boilerField.Relationship.Name
 	relationFullType := getFullType(
