@@ -755,13 +755,14 @@ func toGraphQLName(fieldName string) string {
 func toGraphQLType(fieldName, boilerType string) string {
 	lowerFieldName := strings.ToLower(fieldName)
 	lowerBoilerType := strings.ToLower(boilerType)
+
+	if strings.HasSuffix(lowerFieldName, "id") {
+		return "ID"
+	}
 	if strings.Contains(lowerBoilerType, "string") {
 		return "String"
 	}
 	if strings.Contains(lowerBoilerType, "int") {
-		if strings.HasSuffix(lowerFieldName, "id") {
-			return "ID"
-		}
 		return "Int"
 	}
 	if strings.Contains(lowerBoilerType, "decimal") || strings.Contains(lowerBoilerType, "float") {
