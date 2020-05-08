@@ -75,307 +75,110 @@ go run github.com/webridge-git/sqlboiler-graphql-schema
 ```
 
 ## Example result
+https://github.com/web-ridge/gqlgen-sqlboiler-examples/blob/master/social-network/schema.graphql
 
 ```graphql
-type Address {
-  id: ID!
-  street: String
-  houseNumber: String
-  zipAddress: String
-  city: String
-  longitude: Float!
-  latitude: Float!
-  description: String
-  name: String
-  permission: Boolean
-  addressStatus: AddressStatus!
-  company: Company!
-  contactPerson: Person!
-  houseType: HouseType!
-  owner: Person!
-  userOrganization: UserOrganization!
-  calamities: [Calamity]!
-  people: [Person]!
-  deletedAt: Int
-  updatedAt: Int
-  createdAt: Int
-}
 
-type AddressStatus {
-  id: ID!
-  name: String
-  icon: String
-  description: String
-  order: Int!
-  color: String!
-  addresses: [Address]!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
-}
+directive @isAuthenticated on FIELD_DEFINITION
 
-type Calamity {
+type Comment {
   id: ID!
-  description: String
-  priority: Int!
-  totalBuildings: String
-  street: String
-  houseNumbers: String
-  zipAddress: String
-  longitude: String
-  latitude: String
-  city: String
-  underground: String
-  part: String
-  color: String
-  whatColor: String
-  resolvedM2: Float
-  resolvedDate: Int
-  resolvedCompanyDescription: String
-  resolvedUserDescription: String
-  m2: Float
-  amount: Int
-  address: Address!
-  calamityType: CalamityType!
-  company: Company!
-  houseType: HouseType!
-  parent: Calamity!
-  status: Status!
+  content: String!
+  post: Post!
   user: User!
-  userOrganization: UserOrganization!
-  parentCalamities: [Calamity]!
-  calamityAttributes: [CalamityAttribute]!
-  calamityTags: [CalamityTag]!
-  createdAt: Int
-  deletedAt: Int
-  updatedAt: Int
+  commentLikes: [CommentLike]
 }
 
-type CalamityAttribute {
+type CommentLike {
   id: ID!
-  key: String!
-  type: String!
-  value: String
-  calamity: Calamity!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-type CalamityPicture {
-  id: ID!
-  name: String
-  url: String!
-  calamityId: ID!
-  deletedAt: Int
-  updatedAt: Int
-  createdAt: Int
-}
-
-type CalamityTag {
-  id: ID!
-  calamity: Calamity!
-  tag: Tag!
-}
-
-type CalamityType {
-  id: ID!
-  name: String!
-  order: Int!
-  image: String
-  batchCreate: Boolean
-  description: String
-  defaultM2: Float!
-  userOrganization: UserOrganization!
-  calamities: [Calamity]!
-  deletedAt: Int
-  updatedAt: Int
-  createdAt: Int
-}
-
-type Company {
-  id: ID!
-  name: String!
-  backgroundColor: String!
-  textColor: String!
-  order: Int
-  userOrganization: UserOrganization!
-  addresses: [Address]!
-  calamities: [Calamity]!
-  companyUsers: [CompanyUser]!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
-}
-
-type CompanyUser {
-  id: ID!
-  company: Company!
+  comment: Comment!
   user: User!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
-}
-
-type FailedJob {
-  id: ID!
-  connection: String!
-  queue: String!
-  payload: String!
-  exception: String!
-  failedAt: Int!
-}
-
-type HouseType {
-  id: ID!
-  name: String!
-  order: Int!
-  image: String
-  description: String
-  userOrganization: UserOrganization!
-  addresses: [Address]!
-  calamities: [Calamity]!
-  updatedAt: Int
-  deletedAt: Int
+  likeType: String!
   createdAt: Int
 }
 
-type Migration {
+type Friendship {
   id: ID!
-  migration: String!
-  batch: Int!
+  createdAt: Int
+  users: [User]
 }
 
-type Person {
+type Image {
   id: ID!
-  firstName: String
-  lastName: String
-  description: String
-  telephoneNumber: String
-  email: String
-  hasGivenPermission: Boolean
-  name: String
-  companyName: String
-  address: Address!
-  userOrganization: UserOrganization!
-  contactPersonAddresses: [Address]!
-  ownerAddresses: [Address]!
-  createdAt: Int
-  deletedAt: Int
-  updatedAt: Int
+  post: Post!
+  views: Int
+  originalUrl: String
+  imageVariations: [ImageVariation]
 }
 
-type Role {
+type ImageVariation {
   id: ID!
-  name: String!
-  icon: String
-  description: String
-  users: [User]!
-  createdAt: Int
-  updatedAt: Int
-  deletedAt: Int
+  image: Image!
 }
 
-type Status {
+type Like {
   id: ID!
-  order: Int!
-  name: String!
-  icon: String
-  color: String
-  iconThumb: String
-  calamities: [Calamity]!
-  deletedAt: Int
+  post: Post!
+  user: User!
+  likeType: String!
   createdAt: Int
-  updatedAt: Int
 }
 
-type Tag {
+type Post {
   id: ID!
-  name: String!
-  image: String
-  userOrganization: UserOrganization!
-  calamityTags: [CalamityTag]!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
+  content: String!
+  user: User!
+  comments: [Comment]
+  images: [Image]
+  likes: [Like]
 }
 
 type User {
   id: ID!
-  name: String!
+  firstName: String!
   lastName: String!
   email: String!
-  password: String!
-  rememberToken: String
-  sendNotificationsOnNewCalamity: Boolean!
-  role: Role!
-  calamities: [Calamity]!
-  companyUsers: [CompanyUser]!
-  userUserOrganizations: [UserUserOrganization]!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-type UserOrganization {
-  id: ID!
-  name: String
-  logo: String
-  street: String
-  city: String
-  houseNumber: String
-  zipCode: String
-  telephoneNumber: String
-  email: String
-  primaryColor: String
-  accentColor: String
-  enablePermissionOnAddress: Boolean!
-  enableContact: Boolean!
-  enableOwner: Boolean!
-  enableContactPerson: Boolean!
-  newCalamityCompanyScreen: Boolean!
-  newCalamityPriorityScreen: Boolean!
-  newCalamityM2Screen: Boolean!
-  addresses: [Address]!
-  calamities: [Calamity]!
-  calamityTypes: [CalamityType]!
-  companies: [Company]!
-  houseTypes: [HouseType]!
-  people: [Person]!
-  tags: [Tag]!
-  userUserOrganizations: [UserUserOrganization]!
-  deletedAt: Int
-  updatedAt: Int
-  createdAt: Int
-}
-
-type UserUserOrganization {
-  id: ID!
-  user: User!
-  userOrganization: UserOrganization!
+  comments: [Comment]
+  commentLikes: [CommentLike]
+  likes: [Like]
+  posts: [Post]
+  friendships: [Friendship]
 }
 
 input IDFilter {
+  equalTo: ID
+  notEqualTo: ID
   in: [ID!]
   notIn: [ID!]
 }
 
 input StringFilter {
   equalTo: String
+  notEqualTo: String
+
   in: [String!]
   notIn: [String!]
 
-  startsWith: String
-  endsWith: String
-  contains: String
+  startWith: String
+  notStartWith: String
 
-  startsWithStrict: String # Camel sensitive
-  endsWithStrict: String # Camel sensitive
-  containsStrict: String # Camel sensitive
+  endWith: String
+  notEndWith: String
+
+  contain: String
+  notContain: String
+
+  startWithStrict: String # Camel sensitive
+  notStartWithStrict: String # Camel sensitive
+  endWithStrict: String # Camel sensitive
+  notEndWithStrict: String # Camel sensitive
+  containStrict: String # Camel sensitive
+  notContainStrict: String # Camel sensitive
 }
 
 input IntFilter {
   equalTo: Int
+  notEqualTo: Int
   lessThan: Int
   lessThanOrEqualTo: Int
   moreThan: Int
@@ -386,6 +189,7 @@ input IntFilter {
 
 input FloatFilter {
   equalTo: Float
+  notEqualTo: Float
   lessThan: Float
   lessThanOrEqualTo: Float
   moreThan: Float
@@ -395,367 +199,110 @@ input FloatFilter {
 }
 
 input BooleanFilter {
-  equalTo: Boolean
+  isTrue: Boolean
+  isFalse: Boolean
+  isNull: Boolean
 }
 
-input AddressFilter {
+input CommentFilter {
   search: String
-  where: AddressWhere
+  where: CommentWhere
 }
 
-input AddressWhere {
+input CommentWhere {
   id: IDFilter
-  street: StringFilter
-  houseNumber: StringFilter
-  zipAddress: StringFilter
-  city: StringFilter
-  longitude: FloatFilter
-  latitude: FloatFilter
-  ownerId: IDFilter
-  contactPersonId: IDFilter
-  userOrganizationId: IDFilter
-  companyId: IDFilter
-  houseTypeId: IDFilter
-  description: StringFilter
-  name: StringFilter
-  permission: BooleanFilter
-  addressStatusId: IDFilter
-  addressStatus: AddressStatusWhere
-  company: CompanyWhere
-  contactPerson: PersonWhere
-  houseType: HouseTypeWhere
-  owner: PersonWhere
-  userOrganization: UserOrganizationWhere
-  calamities: CalamityWhere
-  people: PersonWhere
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  createdAt: IntFilter
-  or: AddressWhere
-  and: AddressWhere
-}
-
-input AddressStatusFilter {
-  search: String
-  where: AddressStatusWhere
-}
-
-input AddressStatusWhere {
-  id: IDFilter
-  name: StringFilter
-  icon: StringFilter
-  description: StringFilter
-  order: IntFilter
-  color: StringFilter
-  addresses: AddressWhere
-  deletedAt: IntFilter
-  createdAt: IntFilter
-  updatedAt: IntFilter
-  or: AddressStatusWhere
-  and: AddressStatusWhere
-}
-
-input CalamityFilter {
-  search: String
-  where: CalamityWhere
-}
-
-input CalamityWhere {
-  id: IDFilter
-  parentId: IDFilter
-  description: StringFilter
-  priority: IntFilter
-  totalBuildings: StringFilter
-  street: StringFilter
-  houseNumbers: StringFilter
-  zipAddress: StringFilter
-  longitude: StringFilter
-  latitude: StringFilter
-  statusId: IDFilter
-  companyId: IDFilter
-  userId: IDFilter
-  houseTypeId: IDFilter
-  calamityTypeId: IDFilter
-  city: StringFilter
-  userOrganizationId: IDFilter
-  addressId: IDFilter
-  underground: StringFilter
-  part: StringFilter
-  color: StringFilter
-  whatColor: StringFilter
-  resolvedM2: FloatFilter
-  resolvedDate: IntFilter
-  resolvedCompanyDescription: StringFilter
-  resolvedUserDescription: StringFilter
-  m2: FloatFilter
-  amount: IntFilter
-  address: AddressWhere
-  calamityType: CalamityTypeWhere
-  company: CompanyWhere
-  houseType: HouseTypeWhere
-  parent: CalamityWhere
-  status: StatusWhere
+  content: StringFilter
+  post: PostWhere
   user: UserWhere
-  userOrganization: UserOrganizationWhere
-  parentCalamities: CalamityWhere
-  calamityAttributes: CalamityAttributeWhere
-  calamityTags: CalamityTagWhere
-  createdAt: IntFilter
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  or: CalamityWhere
-  and: CalamityWhere
+  commentLikes: CommentLikeWhere
+  or: CommentWhere
+  and: CommentWhere
 }
 
-input CalamityAttributeFilter {
+input CommentLikeFilter {
   search: String
-  where: CalamityAttributeWhere
+  where: CommentLikeWhere
 }
 
-input CalamityAttributeWhere {
+input CommentLikeWhere {
   id: IDFilter
-  key: StringFilter
-  type: StringFilter
-  value: StringFilter
-  calamityId: IDFilter
-  calamity: CalamityWhere
-  deletedAt: IntFilter
-  createdAt: IntFilter
-  updatedAt: IntFilter
-  or: CalamityAttributeWhere
-  and: CalamityAttributeWhere
-}
-
-input CalamityPictureFilter {
-  search: String
-  where: CalamityPictureWhere
-}
-
-input CalamityPictureWhere {
-  id: IDFilter
-  name: StringFilter
-  url: StringFilter
-  calamityId: IDFilter
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  createdAt: IntFilter
-  or: CalamityPictureWhere
-  and: CalamityPictureWhere
-}
-
-input CalamityTagFilter {
-  search: String
-  where: CalamityTagWhere
-}
-
-input CalamityTagWhere {
-  id: IDFilter
-  calamityId: IDFilter
-  tagId: IDFilter
-  calamity: CalamityWhere
-  tag: TagWhere
-  or: CalamityTagWhere
-  and: CalamityTagWhere
-}
-
-input CalamityTypeFilter {
-  search: String
-  where: CalamityTypeWhere
-}
-
-input CalamityTypeWhere {
-  id: IDFilter
-  name: StringFilter
-  order: IntFilter
-  image: StringFilter
-  userOrganizationId: IDFilter
-  batchCreate: BooleanFilter
-  description: StringFilter
-  defaultM2: FloatFilter
-  userOrganization: UserOrganizationWhere
-  calamities: CalamityWhere
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  createdAt: IntFilter
-  or: CalamityTypeWhere
-  and: CalamityTypeWhere
-}
-
-input CompanyFilter {
-  search: String
-  where: CompanyWhere
-}
-
-input CompanyWhere {
-  id: IDFilter
-  name: StringFilter
-  backgroundColor: StringFilter
-  textColor: StringFilter
-  order: IntFilter
-  userOrganizationId: IDFilter
-  userOrganization: UserOrganizationWhere
-  addresses: AddressWhere
-  calamities: CalamityWhere
-  companyUsers: CompanyUserWhere
-  updatedAt: IntFilter
-  createdAt: IntFilter
-  deletedAt: IntFilter
-  or: CompanyWhere
-  and: CompanyWhere
-}
-
-input CompanyUserFilter {
-  search: String
-  where: CompanyUserWhere
-}
-
-input CompanyUserWhere {
-  id: IDFilter
-  userId: IDFilter
-  companyId: IDFilter
-  company: CompanyWhere
+  comment: CommentWhere
   user: UserWhere
-  updatedAt: IntFilter
+  likeType: StringFilter
   createdAt: IntFilter
-  deletedAt: IntFilter
-  or: CompanyUserWhere
-  and: CompanyUserWhere
+  or: CommentLikeWhere
+  and: CommentLikeWhere
 }
 
-input FailedJobFilter {
+input FriendshipFilter {
   search: String
-  where: FailedJobWhere
+  where: FriendshipWhere
 }
 
-input FailedJobWhere {
+input FriendshipWhere {
   id: IDFilter
-  connection: StringFilter
-  queue: StringFilter
-  payload: StringFilter
-  exception: StringFilter
-  failedAt: IntFilter
-  or: FailedJobWhere
-  and: FailedJobWhere
-}
-
-input HouseTypeFilter {
-  search: String
-  where: HouseTypeWhere
-}
-
-input HouseTypeWhere {
-  id: IDFilter
-  name: StringFilter
-  order: IntFilter
-  image: StringFilter
-  userOrganizationId: IDFilter
-  description: StringFilter
-  userOrganization: UserOrganizationWhere
-  addresses: AddressWhere
-  calamities: CalamityWhere
-  updatedAt: IntFilter
-  deletedAt: IntFilter
   createdAt: IntFilter
-  or: HouseTypeWhere
-  and: HouseTypeWhere
-}
-
-input MigrationFilter {
-  search: String
-  where: MigrationWhere
-}
-
-input MigrationWhere {
-  id: IDFilter
-  migration: StringFilter
-  batch: IntFilter
-  or: MigrationWhere
-  and: MigrationWhere
-}
-
-input PersonFilter {
-  search: String
-  where: PersonWhere
-}
-
-input PersonWhere {
-  id: IDFilter
-  firstName: StringFilter
-  lastName: StringFilter
-  description: StringFilter
-  telephoneNumber: StringFilter
-  email: StringFilter
-  hasGivenPermission: BooleanFilter
-  addressId: IDFilter
-  userOrganizationId: IDFilter
-  name: StringFilter
-  companyName: StringFilter
-  address: AddressWhere
-  userOrganization: UserOrganizationWhere
-  contactPersonAddresses: AddressWhere
-  ownerAddresses: AddressWhere
-  createdAt: IntFilter
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  or: PersonWhere
-  and: PersonWhere
-}
-
-input RoleFilter {
-  search: String
-  where: RoleWhere
-}
-
-input RoleWhere {
-  id: IDFilter
-  name: StringFilter
-  icon: StringFilter
-  description: StringFilter
   users: UserWhere
-  createdAt: IntFilter
-  updatedAt: IntFilter
-  deletedAt: IntFilter
-  or: RoleWhere
-  and: RoleWhere
+  or: FriendshipWhere
+  and: FriendshipWhere
 }
 
-input StatusFilter {
+input ImageFilter {
   search: String
-  where: StatusWhere
+  where: ImageWhere
 }
 
-input StatusWhere {
+input ImageWhere {
   id: IDFilter
-  order: IntFilter
-  name: StringFilter
-  icon: StringFilter
-  color: StringFilter
-  iconThumb: StringFilter
-  calamities: CalamityWhere
-  deletedAt: IntFilter
-  createdAt: IntFilter
-  updatedAt: IntFilter
-  or: StatusWhere
-  and: StatusWhere
+  post: PostWhere
+  views: IntFilter
+  originalUrl: StringFilter
+  imageVariations: ImageVariationWhere
+  or: ImageWhere
+  and: ImageWhere
 }
 
-input TagFilter {
+input ImageVariationFilter {
   search: String
-  where: TagWhere
+  where: ImageVariationWhere
 }
 
-input TagWhere {
+input ImageVariationWhere {
   id: IDFilter
-  name: StringFilter
-  image: StringFilter
-  userOrganizationId: IDFilter
-  userOrganization: UserOrganizationWhere
-  calamityTags: CalamityTagWhere
-  updatedAt: IntFilter
+  image: ImageWhere
+  or: ImageVariationWhere
+  and: ImageVariationWhere
+}
+
+input LikeFilter {
+  search: String
+  where: LikeWhere
+}
+
+input LikeWhere {
+  id: IDFilter
+  post: PostWhere
+  user: UserWhere
+  likeType: StringFilter
   createdAt: IntFilter
-  deletedAt: IntFilter
-  or: TagWhere
-  and: TagWhere
+  or: LikeWhere
+  and: LikeWhere
+}
+
+input PostFilter {
+  search: String
+  where: PostWhere
+}
+
+input PostWhere {
+  id: IDFilter
+  content: StringFilter
+  user: UserWhere
+  comments: CommentWhere
+  images: ImageWhere
+  likes: LikeWhere
+  or: PostWhere
+  and: PostWhere
 }
 
 input UserFilter {
@@ -765,727 +312,290 @@ input UserFilter {
 
 input UserWhere {
   id: IDFilter
-  name: StringFilter
+  firstName: StringFilter
   lastName: StringFilter
   email: StringFilter
-  password: StringFilter
-  rememberToken: StringFilter
-  roleId: IDFilter
-  sendNotificationsOnNewCalamity: BooleanFilter
-  role: RoleWhere
-  calamities: CalamityWhere
-  companyUsers: CompanyUserWhere
-  userUserOrganizations: UserUserOrganizationWhere
-  deletedAt: IntFilter
-  createdAt: IntFilter
-  updatedAt: IntFilter
+  comments: CommentWhere
+  commentLikes: CommentLikeWhere
+  likes: LikeWhere
+  posts: PostWhere
+  friendships: FriendshipWhere
   or: UserWhere
   and: UserWhere
 }
 
-input UserOrganizationFilter {
-  search: String
-  where: UserOrganizationWhere
-}
-
-input UserOrganizationWhere {
-  id: IDFilter
-  name: StringFilter
-  logo: StringFilter
-  street: StringFilter
-  city: StringFilter
-  houseNumber: StringFilter
-  zipCode: StringFilter
-  telephoneNumber: StringFilter
-  email: StringFilter
-  primaryColor: StringFilter
-  accentColor: StringFilter
-  enablePermissionOnAddress: BooleanFilter
-  enableContact: BooleanFilter
-  enableOwner: BooleanFilter
-  enableContactPerson: BooleanFilter
-  newCalamityCompanyScreen: BooleanFilter
-  newCalamityPriorityScreen: BooleanFilter
-  newCalamityM2Screen: BooleanFilter
-  addresses: AddressWhere
-  calamities: CalamityWhere
-  calamityTypes: CalamityTypeWhere
-  companies: CompanyWhere
-  houseTypes: HouseTypeWhere
-  people: PersonWhere
-  tags: TagWhere
-  userUserOrganizations: UserUserOrganizationWhere
-  deletedAt: IntFilter
-  updatedAt: IntFilter
-  createdAt: IntFilter
-  or: UserOrganizationWhere
-  and: UserOrganizationWhere
-}
-
-input UserUserOrganizationFilter {
-  search: String
-  where: UserUserOrganizationWhere
-}
-
-input UserUserOrganizationWhere {
-  id: IDFilter
-  userOrganizationId: IDFilter
-  userId: IDFilter
-  user: UserWhere
-  userOrganization: UserOrganizationWhere
-  or: UserUserOrganizationWhere
-  and: UserUserOrganizationWhere
-}
-
 type Query {
-  address(id: ID!): Address!
-  addresses(filter: AddressFilter): [Address!]!
-  addressStatus(id: ID!): AddressStatus!
-  addressStatuses(filter: AddressStatusFilter): [AddressStatus!]!
-  calamity(id: ID!): Calamity!
-  calamities(filter: CalamityFilter): [Calamity!]!
-  calamityAttribute(id: ID!): CalamityAttribute!
-  calamityAttributes(filter: CalamityAttributeFilter): [CalamityAttribute!]!
-  calamityPicture(id: ID!): CalamityPicture!
-  calamityPictures(filter: CalamityPictureFilter): [CalamityPicture!]!
-  calamityTag(id: ID!): CalamityTag!
-  calamityTags(filter: CalamityTagFilter): [CalamityTag!]!
-  calamityType(id: ID!): CalamityType!
-  calamityTypes(filter: CalamityTypeFilter): [CalamityType!]!
-  company(id: ID!): Company!
-  companies(filter: CompanyFilter): [Company!]!
-  companyUser(id: ID!): CompanyUser!
-  companyUsers(filter: CompanyUserFilter): [CompanyUser!]!
-  failedJob(id: ID!): FailedJob!
-  failedJobs(filter: FailedJobFilter): [FailedJob!]!
-  houseType(id: ID!): HouseType!
-  houseTypes(filter: HouseTypeFilter): [HouseType!]!
-  migration(id: ID!): Migration!
-  migrations(filter: MigrationFilter): [Migration!]!
-  person(id: ID!): Person!
-  people(filter: PersonFilter): [Person!]!
-  role(id: ID!): Role!
-  roles(filter: RoleFilter): [Role!]!
-  status(id: ID!): Status!
-  statuses(filter: StatusFilter): [Status!]!
-  tag(id: ID!): Tag!
-  tags(filter: TagFilter): [Tag!]!
-  user(id: ID!): User!
-  users(filter: UserFilter): [User!]!
-  userOrganization(id: ID!): UserOrganization!
-  userOrganizations(filter: UserOrganizationFilter): [UserOrganization!]!
-  userUserOrganization(id: ID!): UserUserOrganization!
-  userUserOrganizations(
-    filter: UserUserOrganizationFilter
-  ): [UserUserOrganization!]!
+  comment(id: ID!): Comment! @isAuthenticated
+  comments(filter: CommentFilter): [Comment!]! @isAuthenticated
+  commentLike(id: ID!): CommentLike! @isAuthenticated
+  commentLikes(filter: CommentLikeFilter): [CommentLike!]! @isAuthenticated
+  friendship(id: ID!): Friendship! @isAuthenticated
+  friendships(filter: FriendshipFilter): [Friendship!]! @isAuthenticated
+  image(id: ID!): Image! @isAuthenticated
+  images(filter: ImageFilter): [Image!]! @isAuthenticated
+  imageVariation(id: ID!): ImageVariation! @isAuthenticated
+  imageVariations(filter: ImageVariationFilter): [ImageVariation!]!
+    @isAuthenticated
+  like(id: ID!): Like! @isAuthenticated
+  likes(filter: LikeFilter): [Like!]! @isAuthenticated
+  post(id: ID!): Post! @isAuthenticated
+  posts(filter: PostFilter): [Post!]! @isAuthenticated
+  user(id: ID!): User! @isAuthenticated
+  users(filter: UserFilter): [User!]! @isAuthenticated
 }
 
-input AddressInput {
+input CommentCreateInput {
+  content: String!
+  postId: ID!
+}
+
+input CommentUpdateInput {
+  content: String
+  postId: ID
+}
+
+input CommentsCreateInput {
+  comments: [CommentCreateInput!]!
+}
+
+type CommentPayload {
+  comment: Comment!
+}
+
+type CommentDeletePayload {
   id: ID!
-  street: String
-  houseNumber: String
-  zipAddress: String
-  city: String
-  longitude: Float!
-  latitude: Float!
-  ownerId: ID
-  contactPersonId: ID
-  userOrganizationId: ID!
-  companyId: ID
-  houseTypeId: ID
-  description: String
-  name: String
-  permission: Boolean
-  addressStatusId: ID!
-  deletedAt: Int
-  updatedAt: Int
+}
+
+type CommentsPayload {
+  comments: [Comment!]!
+}
+
+type CommentsDeletePayload {
+  ids: [ID!]!
+}
+
+type CommentsUpdatePayload {
+  ok: Boolean!
+}
+
+input CommentLikeCreateInput {
+  commentId: ID!
+  likeType: String!
   createdAt: Int
 }
 
-input AddressesInput {
-  addresses: [AddressInput!]!
-}
-
-type AddressPayload {
-  address: Address!
-}
-
-type AddressDeletePayload {
-  id: ID!
-}
-
-type AddressesPayload {
-  addresses: [Address!]!
-}
-
-type AddressesDeletePayload {
-  ids: [ID!]!
-}
-
-type AddressesUpdatePayload {
-  ok: Boolean!
-}
-
-input AddressStatusInput {
-  id: ID!
-  name: String
-  icon: String
-  description: String
-  order: Int!
-  color: String!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-input AddressStatusesInput {
-  addressStatuses: [AddressStatusInput!]!
-}
-
-type AddressStatusPayload {
-  addressStatus: AddressStatus!
-}
-
-type AddressStatusDeletePayload {
-  id: ID!
-}
-
-type AddressStatusesPayload {
-  addressStatuses: [AddressStatus!]!
-}
-
-type AddressStatusesDeletePayload {
-  ids: [ID!]!
-}
-
-type AddressStatusesUpdatePayload {
-  ok: Boolean!
-}
-
-input CalamityInput {
-  id: ID!
-  parentId: ID
-  description: String
-  priority: Int!
-  totalBuildings: String
-  street: String
-  houseNumbers: String
-  zipAddress: String
-  longitude: String
-  latitude: String
-  statusId: ID
-  companyId: ID
-  userId: ID
-  houseTypeId: ID
-  calamityTypeId: ID
-  city: String
-  userOrganizationId: ID!
-  addressId: ID
-  underground: String
-  part: String
-  color: String
-  whatColor: String
-  resolvedM2: Float
-  resolvedDate: Int
-  resolvedCompanyDescription: String
-  resolvedUserDescription: String
-  m2: Float
-  amount: Int
-  createdAt: Int
-  deletedAt: Int
-  updatedAt: Int
-}
-
-input CalamitiesInput {
-  calamities: [CalamityInput!]!
-}
-
-type CalamityPayload {
-  calamity: Calamity!
-}
-
-type CalamityDeletePayload {
-  id: ID!
-}
-
-type CalamitiesPayload {
-  calamities: [Calamity!]!
-}
-
-type CalamitiesDeletePayload {
-  ids: [ID!]!
-}
-
-type CalamitiesUpdatePayload {
-  ok: Boolean!
-}
-
-input CalamityAttributeInput {
-  id: ID!
-  key: String!
-  type: String!
-  value: String
-  calamityId: ID!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-input CalamityAttributesInput {
-  calamityAttributes: [CalamityAttributeInput!]!
-}
-
-type CalamityAttributePayload {
-  calamityAttribute: CalamityAttribute!
-}
-
-type CalamityAttributeDeletePayload {
-  id: ID!
-}
-
-type CalamityAttributesPayload {
-  calamityAttributes: [CalamityAttribute!]!
-}
-
-type CalamityAttributesDeletePayload {
-  ids: [ID!]!
-}
-
-type CalamityAttributesUpdatePayload {
-  ok: Boolean!
-}
-
-input CalamityPictureInput {
-  id: ID!
-  name: String
-  url: String!
-  calamityId: ID!
-  deletedAt: Int
-  updatedAt: Int
+input CommentLikeUpdateInput {
+  commentId: ID
+  likeType: String
   createdAt: Int
 }
 
-input CalamityPicturesInput {
-  calamityPictures: [CalamityPictureInput!]!
+input CommentLikesCreateInput {
+  commentLikes: [CommentLikeCreateInput!]!
 }
 
-type CalamityPicturePayload {
-  calamityPicture: CalamityPicture!
+type CommentLikePayload {
+  commentLike: CommentLike!
 }
 
-type CalamityPictureDeletePayload {
+type CommentLikeDeletePayload {
   id: ID!
 }
 
-type CalamityPicturesPayload {
-  calamityPictures: [CalamityPicture!]!
+type CommentLikesPayload {
+  commentLikes: [CommentLike!]!
 }
 
-type CalamityPicturesDeletePayload {
+type CommentLikesDeletePayload {
   ids: [ID!]!
 }
 
-type CalamityPicturesUpdatePayload {
+type CommentLikesUpdatePayload {
   ok: Boolean!
 }
 
-input CalamityTagInput {
-  id: ID!
-  calamityId: ID!
-  tagId: ID!
-}
-
-input CalamityTagsInput {
-  calamityTags: [CalamityTagInput!]!
-}
-
-type CalamityTagPayload {
-  calamityTag: CalamityTag!
-}
-
-type CalamityTagDeletePayload {
-  id: ID!
-}
-
-type CalamityTagsPayload {
-  calamityTags: [CalamityTag!]!
-}
-
-type CalamityTagsDeletePayload {
-  ids: [ID!]!
-}
-
-type CalamityTagsUpdatePayload {
-  ok: Boolean!
-}
-
-input CalamityTypeInput {
-  id: ID!
-  name: String!
-  order: Int!
-  image: String
-  userOrganizationId: ID!
-  batchCreate: Boolean
-  description: String
-  defaultM2: Float!
-  deletedAt: Int
-  updatedAt: Int
+input FriendshipCreateInput {
   createdAt: Int
 }
 
-input CalamityTypesInput {
-  calamityTypes: [CalamityTypeInput!]!
-}
-
-type CalamityTypePayload {
-  calamityType: CalamityType!
-}
-
-type CalamityTypeDeletePayload {
-  id: ID!
-}
-
-type CalamityTypesPayload {
-  calamityTypes: [CalamityType!]!
-}
-
-type CalamityTypesDeletePayload {
-  ids: [ID!]!
-}
-
-type CalamityTypesUpdatePayload {
-  ok: Boolean!
-}
-
-input CompanyInput {
-  id: ID!
-  name: String!
-  backgroundColor: String!
-  textColor: String!
-  order: Int
-  userOrganizationId: ID!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
-}
-
-input CompaniesInput {
-  companies: [CompanyInput!]!
-}
-
-type CompanyPayload {
-  company: Company!
-}
-
-type CompanyDeletePayload {
-  id: ID!
-}
-
-type CompaniesPayload {
-  companies: [Company!]!
-}
-
-type CompaniesDeletePayload {
-  ids: [ID!]!
-}
-
-type CompaniesUpdatePayload {
-  ok: Boolean!
-}
-
-input CompanyUserInput {
-  id: ID!
-  userId: ID!
-  companyId: ID!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
-}
-
-input CompanyUsersInput {
-  companyUsers: [CompanyUserInput!]!
-}
-
-type CompanyUserPayload {
-  companyUser: CompanyUser!
-}
-
-type CompanyUserDeletePayload {
-  id: ID!
-}
-
-type CompanyUsersPayload {
-  companyUsers: [CompanyUser!]!
-}
-
-type CompanyUsersDeletePayload {
-  ids: [ID!]!
-}
-
-type CompanyUsersUpdatePayload {
-  ok: Boolean!
-}
-
-input FailedJobInput {
-  id: ID!
-  connection: String!
-  queue: String!
-  payload: String!
-  exception: String!
-  failedAt: Int!
-}
-
-input FailedJobsInput {
-  failedJobs: [FailedJobInput!]!
-}
-
-type FailedJobPayload {
-  failedJob: FailedJob!
-}
-
-type FailedJobDeletePayload {
-  id: ID!
-}
-
-type FailedJobsPayload {
-  failedJobs: [FailedJob!]!
-}
-
-type FailedJobsDeletePayload {
-  ids: [ID!]!
-}
-
-type FailedJobsUpdatePayload {
-  ok: Boolean!
-}
-
-input HouseTypeInput {
-  id: ID!
-  name: String!
-  order: Int!
-  image: String
-  userOrganizationId: ID!
-  description: String
-  updatedAt: Int
-  deletedAt: Int
+input FriendshipUpdateInput {
   createdAt: Int
 }
 
-input HouseTypesInput {
-  houseTypes: [HouseTypeInput!]!
+input FriendshipsCreateInput {
+  friendships: [FriendshipCreateInput!]!
 }
 
-type HouseTypePayload {
-  houseType: HouseType!
+type FriendshipPayload {
+  friendship: Friendship!
 }
 
-type HouseTypeDeletePayload {
+type FriendshipDeletePayload {
   id: ID!
 }
 
-type HouseTypesPayload {
-  houseTypes: [HouseType!]!
+type FriendshipsPayload {
+  friendships: [Friendship!]!
 }
 
-type HouseTypesDeletePayload {
+type FriendshipsDeletePayload {
   ids: [ID!]!
 }
 
-type HouseTypesUpdatePayload {
+type FriendshipsUpdatePayload {
   ok: Boolean!
 }
 
-input MigrationInput {
+input ImageCreateInput {
+  postId: ID!
+  views: Int
+  originalUrl: String
+}
+
+input ImageUpdateInput {
+  postId: ID
+  views: Int
+  originalUrl: String
+}
+
+input ImagesCreateInput {
+  images: [ImageCreateInput!]!
+}
+
+type ImagePayload {
+  image: Image!
+}
+
+type ImageDeletePayload {
   id: ID!
-  migration: String!
-  batch: Int!
 }
 
-input MigrationsInput {
-  migrations: [MigrationInput!]!
+type ImagesPayload {
+  images: [Image!]!
 }
 
-type MigrationPayload {
-  migration: Migration!
-}
-
-type MigrationDeletePayload {
-  id: ID!
-}
-
-type MigrationsPayload {
-  migrations: [Migration!]!
-}
-
-type MigrationsDeletePayload {
+type ImagesDeletePayload {
   ids: [ID!]!
 }
 
-type MigrationsUpdatePayload {
+type ImagesUpdatePayload {
   ok: Boolean!
 }
 
-input PersonInput {
+input ImageVariationCreateInput {
+  imageId: ID!
+}
+
+input ImageVariationUpdateInput {
+  imageId: ID
+}
+
+input ImageVariationsCreateInput {
+  imageVariations: [ImageVariationCreateInput!]!
+}
+
+type ImageVariationPayload {
+  imageVariation: ImageVariation!
+}
+
+type ImageVariationDeletePayload {
   id: ID!
-  firstName: String
-  lastName: String
-  description: String
-  telephoneNumber: String
-  email: String
-  hasGivenPermission: Boolean
-  addressId: ID
-  userOrganizationId: ID!
-  name: String
-  companyName: String
+}
+
+type ImageVariationsPayload {
+  imageVariations: [ImageVariation!]!
+}
+
+type ImageVariationsDeletePayload {
+  ids: [ID!]!
+}
+
+type ImageVariationsUpdatePayload {
+  ok: Boolean!
+}
+
+input LikeCreateInput {
+  postId: ID!
+  likeType: String!
   createdAt: Int
-  deletedAt: Int
-  updatedAt: Int
 }
 
-input PeopleInput {
-  people: [PersonInput!]!
-}
-
-type PersonPayload {
-  person: Person!
-}
-
-type PersonDeletePayload {
-  id: ID!
-}
-
-type PeoplePayload {
-  people: [Person!]!
-}
-
-type PeopleDeletePayload {
-  ids: [ID!]!
-}
-
-type PeopleUpdatePayload {
-  ok: Boolean!
-}
-
-input RoleInput {
-  id: ID!
-  name: String!
-  icon: String
-  description: String
+input LikeUpdateInput {
+  postId: ID
+  likeType: String
   createdAt: Int
-  updatedAt: Int
-  deletedAt: Int
 }
 
-input RolesInput {
-  roles: [RoleInput!]!
+input LikesCreateInput {
+  likes: [LikeCreateInput!]!
 }
 
-type RolePayload {
-  role: Role!
+type LikePayload {
+  like: Like!
 }
 
-type RoleDeletePayload {
+type LikeDeletePayload {
   id: ID!
 }
 
-type RolesPayload {
-  roles: [Role!]!
+type LikesPayload {
+  likes: [Like!]!
 }
 
-type RolesDeletePayload {
+type LikesDeletePayload {
   ids: [ID!]!
 }
 
-type RolesUpdatePayload {
+type LikesUpdatePayload {
   ok: Boolean!
 }
 
-input StatusInput {
-  id: ID!
-  order: Int!
-  name: String!
-  icon: String
-  color: String
-  iconThumb: String
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
+input PostCreateInput {
+  content: String!
 }
 
-input StatusesInput {
-  statuses: [StatusInput!]!
+input PostUpdateInput {
+  content: String
 }
 
-type StatusPayload {
-  status: Status!
+input PostsCreateInput {
+  posts: [PostCreateInput!]!
 }
 
-type StatusDeletePayload {
+type PostPayload {
+  post: Post!
+}
+
+type PostDeletePayload {
   id: ID!
 }
 
-type StatusesPayload {
-  statuses: [Status!]!
+type PostsPayload {
+  posts: [Post!]!
 }
 
-type StatusesDeletePayload {
+type PostsDeletePayload {
   ids: [ID!]!
 }
 
-type StatusesUpdatePayload {
+type PostsUpdatePayload {
   ok: Boolean!
 }
 
-input TagInput {
-  id: ID!
-  name: String!
-  image: String
-  userOrganizationId: ID!
-  updatedAt: Int
-  createdAt: Int
-  deletedAt: Int
-}
-
-input TagsInput {
-  tags: [TagInput!]!
-}
-
-type TagPayload {
-  tag: Tag!
-}
-
-type TagDeletePayload {
-  id: ID!
-}
-
-type TagsPayload {
-  tags: [Tag!]!
-}
-
-type TagsDeletePayload {
-  ids: [ID!]!
-}
-
-type TagsUpdatePayload {
-  ok: Boolean!
-}
-
-input UserInput {
-  id: ID!
-  name: String!
+input UserCreateInput {
+  firstName: String!
   lastName: String!
   email: String!
-  password: String!
-  rememberToken: String
-  roleId: ID!
-  sendNotificationsOnNewCalamity: Boolean!
-  deletedAt: Int
-  createdAt: Int
-  updatedAt: Int
 }
 
-input UsersInput {
-  users: [UserInput!]!
+input UserUpdateInput {
+  firstName: String
+  lastName: String
+  email: String
+}
+
+input UsersCreateInput {
+  users: [UserCreateInput!]!
 }
 
 type UserPayload {
@@ -1508,274 +618,93 @@ type UsersUpdatePayload {
   ok: Boolean!
 }
 
-input UserOrganizationInput {
-  id: ID!
-  name: String
-  logo: String
-  street: String
-  city: String
-  houseNumber: String
-  zipCode: String
-  telephoneNumber: String
-  email: String
-  primaryColor: String
-  accentColor: String
-  enablePermissionOnAddress: Boolean!
-  enableContact: Boolean!
-  enableOwner: Boolean!
-  enableContactPerson: Boolean!
-  newCalamityCompanyScreen: Boolean!
-  newCalamityPriorityScreen: Boolean!
-  newCalamityM2Screen: Boolean!
-  deletedAt: Int
-  updatedAt: Int
-  createdAt: Int
-}
-
-input UserOrganizationsInput {
-  userOrganizations: [UserOrganizationInput!]!
-}
-
-type UserOrganizationPayload {
-  userOrganization: UserOrganization!
-}
-
-type UserOrganizationDeletePayload {
-  id: ID!
-}
-
-type UserOrganizationsPayload {
-  userOrganizations: [UserOrganization!]!
-}
-
-type UserOrganizationsDeletePayload {
-  ids: [ID!]!
-}
-
-type UserOrganizationsUpdatePayload {
-  ok: Boolean!
-}
-
-input UserUserOrganizationInput {
-  id: ID!
-  userOrganizationId: ID!
-  userId: ID!
-}
-
-input UserUserOrganizationsInput {
-  userUserOrganizations: [UserUserOrganizationInput!]!
-}
-
-type UserUserOrganizationPayload {
-  userUserOrganization: UserUserOrganization!
-}
-
-type UserUserOrganizationDeletePayload {
-  id: ID!
-}
-
-type UserUserOrganizationsPayload {
-  userUserOrganizations: [UserUserOrganization!]!
-}
-
-type UserUserOrganizationsDeletePayload {
-  ids: [ID!]!
-}
-
-type UserUserOrganizationsUpdatePayload {
-  ok: Boolean!
-}
-
 type Mutation {
-  createAddress(input: AddressInput!): AddressPayload!
-  createAddresses(input: AddressesInput!): AddressesPayload!
-  updateAddress(input: AddressInput!): AddressPayload!
-  updateAddresses(
-    filter: AddressFilter
-    input: AddressesInput!
-  ): AddressesUpdatePayload!
-  deleteAddress(id: ID!): AddressDeletePayload!
-  deleteAddresses(filter: AddressFilter): AddressesDeletePayload!
-  createAddressStatus(input: AddressStatusInput!): AddressStatusPayload!
-  createAddressStatuses(input: AddressStatusesInput!): AddressStatusesPayload!
-  updateAddressStatus(input: AddressStatusInput!): AddressStatusPayload!
-  updateAddressStatuses(
-    filter: AddressStatusFilter
-    input: AddressStatusesInput!
-  ): AddressStatusesUpdatePayload!
-  deleteAddressStatus(id: ID!): AddressStatusDeletePayload!
-  deleteAddressStatuses(
-    filter: AddressStatusFilter
-  ): AddressStatusesDeletePayload!
-  createCalamity(input: CalamityInput!): CalamityPayload!
-  createCalamities(input: CalamitiesInput!): CalamitiesPayload!
-  updateCalamity(input: CalamityInput!): CalamityPayload!
-  updateCalamities(
-    filter: CalamityFilter
-    input: CalamitiesInput!
-  ): CalamitiesUpdatePayload!
-  deleteCalamity(id: ID!): CalamityDeletePayload!
-  deleteCalamities(filter: CalamityFilter): CalamitiesDeletePayload!
-  createCalamityAttribute(
-    input: CalamityAttributeInput!
-  ): CalamityAttributePayload!
-  createCalamityAttributes(
-    input: CalamityAttributesInput!
-  ): CalamityAttributesPayload!
-  updateCalamityAttribute(
-    input: CalamityAttributeInput!
-  ): CalamityAttributePayload!
-  updateCalamityAttributes(
-    filter: CalamityAttributeFilter
-    input: CalamityAttributesInput!
-  ): CalamityAttributesUpdatePayload!
-  deleteCalamityAttribute(id: ID!): CalamityAttributeDeletePayload!
-  deleteCalamityAttributes(
-    filter: CalamityAttributeFilter
-  ): CalamityAttributesDeletePayload!
-  createCalamityPicture(input: CalamityPictureInput!): CalamityPicturePayload!
-  createCalamityPictures(
-    input: CalamityPicturesInput!
-  ): CalamityPicturesPayload!
-  updateCalamityPicture(input: CalamityPictureInput!): CalamityPicturePayload!
-  updateCalamityPictures(
-    filter: CalamityPictureFilter
-    input: CalamityPicturesInput!
-  ): CalamityPicturesUpdatePayload!
-  deleteCalamityPicture(id: ID!): CalamityPictureDeletePayload!
-  deleteCalamityPictures(
-    filter: CalamityPictureFilter
-  ): CalamityPicturesDeletePayload!
-  createCalamityTag(input: CalamityTagInput!): CalamityTagPayload!
-  createCalamityTags(input: CalamityTagsInput!): CalamityTagsPayload!
-  updateCalamityTag(input: CalamityTagInput!): CalamityTagPayload!
-  updateCalamityTags(
-    filter: CalamityTagFilter
-    input: CalamityTagsInput!
-  ): CalamityTagsUpdatePayload!
-  deleteCalamityTag(id: ID!): CalamityTagDeletePayload!
-  deleteCalamityTags(filter: CalamityTagFilter): CalamityTagsDeletePayload!
-  createCalamityType(input: CalamityTypeInput!): CalamityTypePayload!
-  createCalamityTypes(input: CalamityTypesInput!): CalamityTypesPayload!
-  updateCalamityType(input: CalamityTypeInput!): CalamityTypePayload!
-  updateCalamityTypes(
-    filter: CalamityTypeFilter
-    input: CalamityTypesInput!
-  ): CalamityTypesUpdatePayload!
-  deleteCalamityType(id: ID!): CalamityTypeDeletePayload!
-  deleteCalamityTypes(filter: CalamityTypeFilter): CalamityTypesDeletePayload!
-  createCompany(input: CompanyInput!): CompanyPayload!
-  createCompanies(input: CompaniesInput!): CompaniesPayload!
-  updateCompany(input: CompanyInput!): CompanyPayload!
-  updateCompanies(
-    filter: CompanyFilter
-    input: CompaniesInput!
-  ): CompaniesUpdatePayload!
-  deleteCompany(id: ID!): CompanyDeletePayload!
-  deleteCompanies(filter: CompanyFilter): CompaniesDeletePayload!
-  createCompanyUser(input: CompanyUserInput!): CompanyUserPayload!
-  createCompanyUsers(input: CompanyUsersInput!): CompanyUsersPayload!
-  updateCompanyUser(input: CompanyUserInput!): CompanyUserPayload!
-  updateCompanyUsers(
-    filter: CompanyUserFilter
-    input: CompanyUsersInput!
-  ): CompanyUsersUpdatePayload!
-  deleteCompanyUser(id: ID!): CompanyUserDeletePayload!
-  deleteCompanyUsers(filter: CompanyUserFilter): CompanyUsersDeletePayload!
-  createFailedJob(input: FailedJobInput!): FailedJobPayload!
-  createFailedJobs(input: FailedJobsInput!): FailedJobsPayload!
-  updateFailedJob(input: FailedJobInput!): FailedJobPayload!
-  updateFailedJobs(
-    filter: FailedJobFilter
-    input: FailedJobsInput!
-  ): FailedJobsUpdatePayload!
-  deleteFailedJob(id: ID!): FailedJobDeletePayload!
-  deleteFailedJobs(filter: FailedJobFilter): FailedJobsDeletePayload!
-  createHouseType(input: HouseTypeInput!): HouseTypePayload!
-  createHouseTypes(input: HouseTypesInput!): HouseTypesPayload!
-  updateHouseType(input: HouseTypeInput!): HouseTypePayload!
-  updateHouseTypes(
-    filter: HouseTypeFilter
-    input: HouseTypesInput!
-  ): HouseTypesUpdatePayload!
-  deleteHouseType(id: ID!): HouseTypeDeletePayload!
-  deleteHouseTypes(filter: HouseTypeFilter): HouseTypesDeletePayload!
-  createMigration(input: MigrationInput!): MigrationPayload!
-  createMigrations(input: MigrationsInput!): MigrationsPayload!
-  updateMigration(input: MigrationInput!): MigrationPayload!
-  updateMigrations(
-    filter: MigrationFilter
-    input: MigrationsInput!
-  ): MigrationsUpdatePayload!
-  deleteMigration(id: ID!): MigrationDeletePayload!
-  deleteMigrations(filter: MigrationFilter): MigrationsDeletePayload!
-  createPerson(input: PersonInput!): PersonPayload!
-  createPeople(input: PeopleInput!): PeoplePayload!
-  updatePerson(input: PersonInput!): PersonPayload!
-  updatePeople(filter: PersonFilter, input: PeopleInput!): PeopleUpdatePayload!
-  deletePerson(id: ID!): PersonDeletePayload!
-  deletePeople(filter: PersonFilter): PeopleDeletePayload!
-  createRole(input: RoleInput!): RolePayload!
-  createRoles(input: RolesInput!): RolesPayload!
-  updateRole(input: RoleInput!): RolePayload!
-  updateRoles(filter: RoleFilter, input: RolesInput!): RolesUpdatePayload!
-  deleteRole(id: ID!): RoleDeletePayload!
-  deleteRoles(filter: RoleFilter): RolesDeletePayload!
-  createStatus(input: StatusInput!): StatusPayload!
-  createStatuses(input: StatusesInput!): StatusesPayload!
-  updateStatus(input: StatusInput!): StatusPayload!
-  updateStatuses(
-    filter: StatusFilter
-    input: StatusesInput!
-  ): StatusesUpdatePayload!
-  deleteStatus(id: ID!): StatusDeletePayload!
-  deleteStatuses(filter: StatusFilter): StatusesDeletePayload!
-  createTag(input: TagInput!): TagPayload!
-  createTags(input: TagsInput!): TagsPayload!
-  updateTag(input: TagInput!): TagPayload!
-  updateTags(filter: TagFilter, input: TagsInput!): TagsUpdatePayload!
-  deleteTag(id: ID!): TagDeletePayload!
-  deleteTags(filter: TagFilter): TagsDeletePayload!
-  createUser(input: UserInput!): UserPayload!
-  createUsers(input: UsersInput!): UsersPayload!
-  updateUser(input: UserInput!): UserPayload!
-  updateUsers(filter: UserFilter, input: UsersInput!): UsersUpdatePayload!
-  deleteUser(id: ID!): UserDeletePayload!
-  deleteUsers(filter: UserFilter): UsersDeletePayload!
-  createUserOrganization(
-    input: UserOrganizationInput!
-  ): UserOrganizationPayload!
-  createUserOrganizations(
-    input: UserOrganizationsInput!
-  ): UserOrganizationsPayload!
-  updateUserOrganization(
-    input: UserOrganizationInput!
-  ): UserOrganizationPayload!
-  updateUserOrganizations(
-    filter: UserOrganizationFilter
-    input: UserOrganizationsInput!
-  ): UserOrganizationsUpdatePayload!
-  deleteUserOrganization(id: ID!): UserOrganizationDeletePayload!
-  deleteUserOrganizations(
-    filter: UserOrganizationFilter
-  ): UserOrganizationsDeletePayload!
-  createUserUserOrganization(
-    input: UserUserOrganizationInput!
-  ): UserUserOrganizationPayload!
-  createUserUserOrganizations(
-    input: UserUserOrganizationsInput!
-  ): UserUserOrganizationsPayload!
-  updateUserUserOrganization(
-    input: UserUserOrganizationInput!
-  ): UserUserOrganizationPayload!
-  updateUserUserOrganizations(
-    filter: UserUserOrganizationFilter
-    input: UserUserOrganizationsInput!
-  ): UserUserOrganizationsUpdatePayload!
-  deleteUserUserOrganization(id: ID!): UserUserOrganizationDeletePayload!
-  deleteUserUserOrganizations(
-    filter: UserUserOrganizationFilter
-  ): UserUserOrganizationsDeletePayload!
+  createComment(input: CommentCreateInput!): CommentPayload! @isAuthenticated
+  createComments(input: CommentsCreateInput!): CommentsPayload! @isAuthenticated
+  updateComment(id: ID!, input: CommentUpdateInput!): CommentPayload!
+    @isAuthenticated
+  updateComments(
+    filter: CommentFilter
+    input: CommentUpdateInput!
+  ): CommentsUpdatePayload! @isAuthenticated
+  deleteComment(id: ID!): CommentDeletePayload! @isAuthenticated
+  deleteComments(filter: CommentFilter): CommentsDeletePayload! @isAuthenticated
+  createCommentLike(input: CommentLikeCreateInput!): CommentLikePayload!
+    @isAuthenticated
+  createCommentLikes(input: CommentLikesCreateInput!): CommentLikesPayload!
+    @isAuthenticated
+  updateCommentLike(
+    id: ID!
+    input: CommentLikeUpdateInput!
+  ): CommentLikePayload! @isAuthenticated
+  updateCommentLikes(
+    filter: CommentLikeFilter
+    input: CommentLikeUpdateInput!
+  ): CommentLikesUpdatePayload! @isAuthenticated
+  deleteCommentLike(id: ID!): CommentLikeDeletePayload! @isAuthenticated
+  deleteCommentLikes(filter: CommentLikeFilter): CommentLikesDeletePayload!
+    @isAuthenticated
+  createFriendship(input: FriendshipCreateInput!): FriendshipPayload!
+    @isAuthenticated
+  createFriendships(input: FriendshipsCreateInput!): FriendshipsPayload!
+    @isAuthenticated
+  updateFriendship(id: ID!, input: FriendshipUpdateInput!): FriendshipPayload!
+    @isAuthenticated
+  updateFriendships(
+    filter: FriendshipFilter
+    input: FriendshipUpdateInput!
+  ): FriendshipsUpdatePayload! @isAuthenticated
+  deleteFriendship(id: ID!): FriendshipDeletePayload! @isAuthenticated
+  deleteFriendships(filter: FriendshipFilter): FriendshipsDeletePayload!
+    @isAuthenticated
+  createImage(input: ImageCreateInput!): ImagePayload! @isAuthenticated
+  createImages(input: ImagesCreateInput!): ImagesPayload! @isAuthenticated
+  updateImage(id: ID!, input: ImageUpdateInput!): ImagePayload! @isAuthenticated
+  updateImages(
+    filter: ImageFilter
+    input: ImageUpdateInput!
+  ): ImagesUpdatePayload! @isAuthenticated
+  deleteImage(id: ID!): ImageDeletePayload! @isAuthenticated
+  deleteImages(filter: ImageFilter): ImagesDeletePayload! @isAuthenticated
+  createImageVariation(
+    input: ImageVariationCreateInput!
+  ): ImageVariationPayload! @isAuthenticated
+  createImageVariations(
+    input: ImageVariationsCreateInput!
+  ): ImageVariationsPayload! @isAuthenticated
+  updateImageVariation(
+    id: ID!
+    input: ImageVariationUpdateInput!
+  ): ImageVariationPayload! @isAuthenticated
+  updateImageVariations(
+    filter: ImageVariationFilter
+    input: ImageVariationUpdateInput!
+  ): ImageVariationsUpdatePayload! @isAuthenticated
+  deleteImageVariation(id: ID!): ImageVariationDeletePayload! @isAuthenticated
+  deleteImageVariations(
+    filter: ImageVariationFilter
+  ): ImageVariationsDeletePayload! @isAuthenticated
+  createLike(input: LikeCreateInput!): LikePayload! @isAuthenticated
+  createLikes(input: LikesCreateInput!): LikesPayload! @isAuthenticated
+  updateLike(id: ID!, input: LikeUpdateInput!): LikePayload! @isAuthenticated
+  updateLikes(filter: LikeFilter, input: LikeUpdateInput!): LikesUpdatePayload!
+    @isAuthenticated
+  deleteLike(id: ID!): LikeDeletePayload! @isAuthenticated
+  deleteLikes(filter: LikeFilter): LikesDeletePayload! @isAuthenticated
+  createPost(input: PostCreateInput!): PostPayload! @isAuthenticated
+  createPosts(input: PostsCreateInput!): PostsPayload! @isAuthenticated
+  updatePost(id: ID!, input: PostUpdateInput!): PostPayload! @isAuthenticated
+  updatePosts(filter: PostFilter, input: PostUpdateInput!): PostsUpdatePayload!
+    @isAuthenticated
+  deletePost(id: ID!): PostDeletePayload! @isAuthenticated
+  deletePosts(filter: PostFilter): PostsDeletePayload! @isAuthenticated
+  createUser(input: UserCreateInput!): UserPayload! @isAuthenticated
+  createUsers(input: UsersCreateInput!): UsersPayload! @isAuthenticated
+  updateUser(id: ID!, input: UserUpdateInput!): UserPayload! @isAuthenticated
+  updateUsers(filter: UserFilter, input: UserUpdateInput!): UsersUpdatePayload!
+    @isAuthenticated
+  deleteUser(id: ID!): UserDeletePayload! @isAuthenticated
+  deleteUsers(filter: UserFilter): UsersDeletePayload! @isAuthenticated
 }
 ```
 
