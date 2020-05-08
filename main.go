@@ -8,9 +8,9 @@ import (
 	"path"
 	"strings"
 
-	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
+	pluralize "github.com/web-ridge/go-pluralize"
 	gqlgen_sqlboiler "github.com/web-ridge/gqlgen-sqlboiler/v2"
 )
 
