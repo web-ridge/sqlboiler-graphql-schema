@@ -49,24 +49,24 @@ GLOBAL OPTIONS:
 
 ## Features
 
-- Support for manual updating the schema and re-generating (doing a three way merge https://github.com/charlesvdv/go-three-way-merge)
-- Generating basic models (100%)
-- Generating basic queries (100%)
-- Generating filter for array queries (100%)
-- Generating filters for relationships (100%)
-- Generating input for mutations (100%)
-- Generating payload for mutations (100%)
-- Generating mutations (100%)
-- Generating mutations for array models (0% WIP)
-- Generating pagination for array models (20%, offset-based pagination done, TODO: cursor-based paginiation)
+- [x] Support for manual updating the schema and re-generating (doing a three way merge https://github.com/charlesvdv/go-three-way-merge)
+- [x] Generating basic models (100%)
+- [x] Generating basic queries (100%)
+- [x] Generating filter for array queries (100%)
+- [x] Generating filters for relationships (100%)
+- [x] Generating input for mutations (100%)
+- [x] Generating payload for mutations (100%)
+- [x] Generating mutations (100%)
+- [x] Generating mutations for array models (0% WIP)
+- [x] Generating pagination for array models (20%, offset-based pagination done, TODO: cursor-based paginiation)
 
 ## Future roadmap
 
-- Tests / snapshots
-- Edges / connections
-- Detecting when relationship is many to many
-- Adding node from to many-to-many relationships
-- Removing node from many-to-many relationships
+- [ ] Tests / snapshots
+- [ ] Edges / connections
+- [ ] Detecting when relationship is many to many
+- [ ] Adding node from to many-to-many relationships
+- [ ] Removing node from many-to-many relationships
 
 Feel free to help and make a PR.
 
