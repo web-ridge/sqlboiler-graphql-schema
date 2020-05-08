@@ -1,5 +1,7 @@
 # sqlboiler-graphql-schema
 
+We want developers to be able to build software faster using modern tools like GraphQL, Golang, React Native without depending on commercial providers like Firebase or AWS Amplify.
+
 This program generates a grapql schema based on the generated sqlboiler structs we do this because we want to support the sqlboiler aliasing in our schema. Generating the schema is a good way too add type safety to queries and filters and prevent too much manual typing.
 
 You can edit your schema like you want later and re-generate if your database changes. This program will create a merge conflict with your existing schema so you can choose to accept/reject changes.
@@ -1777,124 +1779,6 @@ type Mutation {
 }
 ```
 
-## Filtering lists (WIP)
+## Donate
 
-This program generates type safe filters you can use in your frontend
-
-### Search
-
-```graphql
-query(filter: {
-    search: 'jan'
-})
-```
-
-### This or that
-
-```graphql
-query(filter: {
-    where: {
-        name:{
-            equalTo: 'Jan'
-        }
-        or: {
-            name: {
-                equalTo: 'Jannes',
-            }
-        }
-    }
-})
-
-where: {
-    id: {
-        equalTo: 1
-    }
-    name: {
-        startsWith: 'J',
-    }
-    where:{
-
-    }
-}
-```
-
-### (() or ())
-
-````graphql
-query(filter: {
-    where: {
-        or:{
-            id: {
-                equalTo: 1
-            }
-            name: {
-                startsWith: 'J',
-            }
-            or:{
-                id: {
-                    equalTo: 2
-                }
-                name: {
-                    startsWith: 'R',
-                }
-            }
-        }
-    }})
-
-### Filter
-```graphql
-query(filter: {
-    where: {
-        id:{
-            in: [1, 2, 3, 4]
-            equalTo: 1
-        },
-        name: {
-            like: "joe"
-        },
-        organizationId: {
-            equalTo: 1,
-        }
-        or: {
-            id:{
-                in: []
-                equalTo: 1
-            },
-             name: {
-                like: "joe"
-            },
-        }
-        and: {
-
-        }
-    }
-
-})
-````
-
-## How to detect many to many (notes to myself)
-
-```golang
-User {
-    UserOrganizations []UserOrganization
-    Posts []Post
-}
-
-Post {
-    User User
-    Message string
-}
-
-UserOrganization {
-    User User
-    Organization Organization
-}
-
-Organization {
-    Users []User
-}
-```
-
-### Possible detection
-
-if table has only 2 relationship and table contains both tables
+Did we save you a lot of time? Please consider a donation so we can invest more time in this library: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7B9KKQLXTEW9Q&source=url)
