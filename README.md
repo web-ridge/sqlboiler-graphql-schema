@@ -44,14 +44,12 @@ GLOBAL OPTIONS:
    --help, -h                 show help (default: false)
 ```
 
-- Models
-- Mutations (Followed best practices https://blog.apollographql.com/designing-graphql-mutations-e09de826ed97)
 
 ## Features
-
 - [x] Support for manual updating the schema and re-generating (doing a three way merge https://github.com/charlesvdv/go-three-way-merge)
-- [x] Generating basic models (100%)
-- [x] Generating basic queries (100%)
+- [x] Generating basic models
+- [x] Generating basic queries
+- [x] Generating mutations (Followed best practices https://blog.apollographql.com/designing-graphql-mutations-e09de826ed97)
 - [x] Generating filter for array queries (100%)
 - [x] Generating filters for relationships (100%)
 - [x] Generating input for mutations (100%)
@@ -67,6 +65,9 @@ GLOBAL OPTIONS:
 - [ ] Detecting when relationship is many to many
 - [ ] Adding node from to many-to-many relationships
 - [ ] Removing node from many-to-many relationships
+- [ ] Supporting schema per model
+
+
 
 Feel free to help and make a PR.
 
