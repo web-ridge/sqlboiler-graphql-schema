@@ -288,9 +288,8 @@ input FloatFilter {
 }
 
 input BooleanFilter {
-	isTrue: Boolean
-	isFalse: Boolean
-	isNull: Boolean
+	equalTo: Boolean
+	notEqualTo: Boolean
 }
 `
 
