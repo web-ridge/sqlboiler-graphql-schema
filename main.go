@@ -52,7 +52,7 @@ func main() {
 			},
 			&cli.StringSliceFlag{
 				Name:        "skip-input-fields",
-				Usage:       "input names which should be skipped: e.g. userId organizationId",
+				Usage:       "input names which should be skipped: e.g. --skip-input-fields=userId --skip-input-fields=organizationId --skip-input-fields=createdAt",
 				Destination: &skipInputFields,
 			},
 			&cli.StringSliceFlag{
