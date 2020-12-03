@@ -1,4 +1,6 @@
-# sqlboiler-graphql-schema
+# MOVED TO https://github.com/web-ridge/gqlgen-sqlboiler
+
+## sqlboiler-graphql-schema
 
 We want developers to be able to build software faster using modern tools like GraphQL, Golang, React Native without depending on commercial providers like Firebase or AWS Amplify.
 
