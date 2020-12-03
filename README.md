@@ -1,7 +1,7 @@
 # MOVED TO https://github.com/web-ridge/gqlgen-sqlboiler
 
 Can now be used like this (please look up latest api on the repository above)
-```
+```golang
 	if err = gbgen.SchemaWrite(gbgen.SchemaConfig{
 		BoilerModelDirectory: backend,
 		// Directives:           []string{"IsAuthenticated"},
