@@ -1,5 +1,23 @@
 # MOVED TO https://github.com/web-ridge/gqlgen-sqlboiler
 
+Can now be used like this (please look up latest api on the repository above)
+```
+	if err = gbgen.SchemaWrite(gbgen.SchemaConfig{
+		BoilerModelDirectory: backend,
+		// Directives:           []string{"IsAuthenticated"},
+		// GenerateBatchCreate:  false, // Not implemented yet
+		GenerateMutations:    true,
+		GenerateBatchDelete:  true,
+		GenerateBatchUpdate:  true,
+	}, "schema.graphql", gbgen.SchemaGenerateConfig{
+		MergeSchema: false, // uses three way merge to keep your customization
+	}); err != nil {
+		fmt.Println("error while trying to generate schema.graphql")
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(3)
+	}
+```
+
 ## sqlboiler-graphql-schema
 
 We want developers to be able to build software faster using modern tools like GraphQL, Golang, React Native without depending on commercial providers like Firebase or AWS Amplify.
